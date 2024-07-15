@@ -20,15 +20,11 @@ RED="31"
 # Путь к скрипту и файлу версии
 script_dir="$HOME/qq"
 script_path="$script_dir/qq.sh"
-version_file="$script_dir/version.txt"
 alias_file="$HOME/.bash_aliases"
 [ ! -f "$alias_file" ] && alias_file="$HOME/.bashrc"
 
 # Создание папки для скрипта, если она не существует
 mkdir -p "$script_dir"
-
-# Создание файла с текущей версией
-echo "0.4.0" > "$version_file"
 
 # Удаление существующего алиаса и создание нового
 if grep -q "alias qq=" "$alias_file"; then
@@ -49,7 +45,7 @@ declare -A commands=(
 )
 
 check_version() {
-    local current_version=$(cat "$HOME/qq/version.txt")
+    local current_version=0.4.0
     local latest_version=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/version.txt)
 
     if [ "$latest_version" != "$current_version" ]; then
