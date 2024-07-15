@@ -16,6 +16,8 @@ GREEN="32"
 BLUE="34"
 YELLOW="33"
 RED="31"
+WHITE="37"
+CIAN="36"
 
 # Путь к скрипту и файлу версии
 script_dir="$HOME/qq"
@@ -35,6 +37,17 @@ fi
 cat > "$script_path" << 'EOF'
 #!/bin/bash
 
+VERSION=0.5.1
+
+# Цвета для вывода
+GREEN=32
+BLUE=34
+YELLOW=33
+RED=31
+WHITE=37
+CIAN=36
+BASIC=""
+
 declare -A commands=(
     ["-h"]="show_help"
     ["--help"]="show_help"
@@ -44,20 +57,42 @@ declare -A commands=(
     ["--list-all"]="list_all_containers"
     ["-gph"]="generate_password_hash"
     ["--generate-password-hash"]="generate_password_hash"
+    ["-i"]="qq_get_info"
+    ["--info"]="qq_get_info"
 )
+
+stdout() {
+    local color=$1
+    shift
+    local message=$*
+    if [ -z "$color" ] || [ "$color" == "$BASIC" ]; then
+        echo "$message"
+    else
+        echo -e "\033[${color}m${message}\033[0m"
+    fi
+}
+
+qq_get_info() {
+    stdout $YELLOW "Скрипт qq"
+    stdout $YELLOW "Версия: $VERSION"
+    stdout $YELLOW "Репозиторий скрипта: https://github.com/ArturUshakov/qq"
+    stdout $YELLOW "По вопросам и предложениям писать: https://t.me/Mariores"
+}
 
 generate_password_hash() {
     local password=$1
     local hash=$(php -r "echo password_hash('$password', PASSWORD_DEFAULT);")
-    echo "Hashed password: $hash"
+    stdout $WHITE "Hashed password: $hash"
 }
 
 check_version() {
-    local current_version=0.5.0
     local latest_version=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/version.txt)
 
-    if [ "$latest_version" != "$current_version" ]; then
-        echo -e "\n\n\e[31mВНИМАНИЕ!\e[0m\nДоступна новая версия скрипта ($latest_version).\n\e[0mПожалуйста, обновите скрипт командой \e[34m'qq update'\e[0m"
+    if [ "$latest_version" != "$VERSION" ]; then
+        stdout $RED "\nВНИМАНИЕ!"
+        stdout $WHITE "Доступна новая версия скрипта ($latest_version)"
+        stdout $WHITE "Пожалуйста, обновите скрипт командой:"
+        stdout $CIAN "qq update"
     fi
 }
 
@@ -68,13 +103,13 @@ update() {
     version=$(echo "$changelog" | grep -E '^## \[.*\] - ' | head -n 1 | sed -E 's/^## \[([0-9.]+)\].*/\1/')
     changes=$(echo "$changelog" | awk '/^## \['"$version"'\] - /{flag=1; next} /^## /{flag=0} flag')
 
-    echo -e "====================================="
-    echo -e "\e[32mСкрипт обновлен до версии $version\e[0m"
-    echo -e "\e[33mИзменения в версии $version:\e[0m"
-    echo -e "\e[36m$changes\e[0m"
+    stdout $BASIC "====================================="
+    stdout $GREEN "Скрипт обновлен до версии $version"
+    stdout $YELLOW "Изменения в версии $version:"
+    stdout 36 "$changes"
     echo "$version" > "$HOME/qq/version.txt"
-    echo -e "\n\e[33mДля обновления скрипта запустите новый терминал или выполните команду:\e[0m"
-    echo -e "\e[36msource ~/.bashrc\e[0m"
+    stdout $YELLOW "\nДля обновления скрипта запустите новый терминал или выполните команду:"
+    stdout 36 "source ~/.bashrc"
 }
 
 show_help() {
@@ -82,6 +117,7 @@ show_help() {
         "qq -h, --help       Выводит это сообщение"
         "qq -l, --list       Выводит список запущенных контейнеров"
         "qq -la, --list-all  Выводит список всех контейнеров"
+        "qq -i, --info       Выводит информацию о скрипте"
         "qq -gph [password]  Генерирует хэш пароля"
         "qq [фильтр]         Останавливает все контейнеры, соответствующие фильтру"
         "qq                  Останавливает все запущенные контейнеры"
