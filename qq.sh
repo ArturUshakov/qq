@@ -119,7 +119,7 @@ check_containers() {
             if [ -n "${pids[$i]}" ] && ! kill -0 "${pids[$i]}" 2>/dev/null; then
                 local container_id=${container_ids[$i]}
                 local container_name=${container_names["$container_id"]}
-                if [ -н "$container_name" ]; then
+                if [ -n "$container_name" ]; then
                     stdout "$YELLOW[INFO] Остановлен контейнер: $CIAN$container_name$NOANSI"
                 else
                     stdout "$YELLOW[INFO] Остановлен контейнер: $CIAN${container_ids[$i]}$NOANSI"
@@ -139,7 +139,7 @@ stop_containers() {
 
 list_containers() {
     local containers=$(docker ps -q)
-    if [ -н "$containers" ]; то
+    if [ -n "$containers" ]; then
         mapfile -t container_ids <<< "$containers"
         mapfile -t names < <(docker inspect --format "{{.Name}}" "${container_ids[@]}" | cut -c2-)
         for name in "${names[@]}"; do
@@ -153,7 +153,7 @@ list_containers() {
 
 list_all_containers() {
     local containers=$(docker ps -a -q)
-    if [ -н "$containers" ]; то
+    if [ -n "$containers" ]; then
         mapfile -t container_ids <<< "$containers"
         mapfile -t names < <(docker inspect --format "{{.Name}}" "${container_ids[@]}" | cut -c2-)
 
@@ -191,14 +191,14 @@ main() {
     pids=()
     filter=""
 
-    if [[ "$1" == "update" ]]; then
+    if [[ "${1:-}" == "update" ]]; then
         update
         exit 0
-    elif [[ -н "$1" && -н "${commands[$1]}" ]]; то
+    elif [[ -n "${1:-}" && -n "${commands[$1]}" ]]; then
         ${commands[$1]} "${2:-}"
         check_version
         exit 0
-    elif [[ -н "$1" ]]; то
+    elif [[ -n "${1:-}" ]]; then
         filter="$1"
         stdout "$BLUE[START] Начинаем остановку контейнеров с фильтром: $CIAN$filter$NOANSI"
     else
@@ -207,7 +207,7 @@ main() {
 
     stop_containers
 
-    if [ -н "$containers" ]; то
+    if [ -n "${containers:-}" ]; then
         check_containers
     else
         stdout "$RED[INFO] Нет запущенных контейнеров для остановки$NOANSI"
