@@ -42,11 +42,11 @@ declare -A commands=(
 )
 
 check_version() {
-    local current_version="0.3.0"
+    local current_version="0.3.1"
     local latest_version=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/version.txt)
 
     if [ "$latest_version" != "$current_version" ]; then
-        echo -e "\e[Доступна новая версия скрипта ($latest_version). Пожалуйста, обновите скрипт командой 'qq update'\e[0m"
+        echo -e "\n\n\e[31mВНИМАНИЕ!\e[0m\nДоступна новая версия скрипта ($latest_version).\n\e[0mПожалуйста, обновите скрипт командой \e[34m'qq update'\e[0m"
     fi
 }
 
