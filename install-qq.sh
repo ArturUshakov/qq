@@ -42,7 +42,7 @@ declare -A commands=(
 )
 
 check_version() {
-    local current_version="0.3.1"
+    local current_version="0.3.2"
     local latest_version=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/version.txt)
 
     if [ "$latest_version" != "$current_version" ]; then
