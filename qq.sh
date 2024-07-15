@@ -86,16 +86,12 @@ function script_info {
     echo "Creator: $(print_colored green "https://t.me/Mariores")"
 }
 
-function get_installed_version {
-    grep -m 1 -oP '(?<=## \[)\d+\.\d+\.\d+(?=\])' "$INSTALL_DIR/CHANGELOG.md"
-}
-
 function get_latest_version {
     curl -s "https://raw.githubusercontent.com/ArturUshakov/qq/master/CHANGELOG.md" | grep -m 1 -oP '(?<=## \[)\d+\.\d+\.\d+(?=\])'
 }
 
 function check_for_updates {
-    local installed_version=$(get_installed_version)
+    local installed_version=$(get_version)
     local latest_version=$(get_latest_version)
 
     if [ "$installed_version" != "$latest_version" ]; then

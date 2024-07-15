@@ -36,6 +36,7 @@ files=("qq.sh" "qq_completions.sh" "CHANGELOG.md")
 
 for file in "${files[@]}"; do
     curl -s "$REPO_URL/$file" -o "$INSTALL_DIR/$file"
+    chmod +x "$INSTALL_DIR/$file"
     if [ $? -eq 0 ]; then
         print_colored green "$file загружен успешно."
     else
