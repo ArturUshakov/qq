@@ -57,6 +57,7 @@ update() {
      version=$(echo "$changelog" | grep -E '^## \[.*\] - ' | head -n 1 | sed -E 's/^## \[([0-9.]+)\].*/\1/')
      changes=$(echo "$changelog" | awk '/^## \['"$version"'\] - /{flag=1; next} /^## /{flag=0} flag')
 
+      echo "\n\n"
       echo -e "\e[32mСкрипт обновлен до версии $version\e[0m"
       echo -e "\e[33mИзменения в версии $version:\e[0m"
       echo -e "\e[36m$changes\e[0m"
@@ -210,12 +211,12 @@ EOF
 chmod +x "$script_path"
 
 echo "alias qq='$script_path'" >> "$alias_file"
-print_colored "$GREEN" "Создаем новый алиас qq..."
 
-print_colored "$GREEN" "Установка завершена"
+print_colored "$GREEN" "Создаем новый алиас qq..."
+print_colored "$GREEN" "Установка завершена\n"
 print_colored "$YELLOW" "Чтобы применить изменения, выполните команду:"
-print_colored "$BLUE" "source $alias_file"
+print_colored "$BLUE" "source $alias_file\n"
 print_colored "$YELLOW" "Для получения помощи по qq выполните:"
-print_colored "$BLUE" "qq -h"
+print_colored "$BLUE" "qq -h\n"
 print_colored "$YELLOW" "Для обновления скрипта можно выполнить команду:"
 print_colored "$BLUE" "qq update"
