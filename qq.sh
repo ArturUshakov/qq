@@ -43,7 +43,7 @@ generate_password_hash() {
         exit 1
     fi
     local hash=$(php -r "echo password_hash('$password', PASSWORD_DEFAULT);")
-    stdout "$WHITEHashed password: $hash$NOANSI"
+    stdout "$WHITE Hashed password: $hash$NOANSI"
 }
 
 check_version() {
@@ -59,11 +59,11 @@ update() {
     local version=$(echo "$changelog" | grep -E '^## \[.*\] - ' | head -n 1 | sed -E 's/^## \[([0-9.]+)\].*/\1/')
     local changes=$(echo "$changelog" | awk '/^## \['"$version"'\] - /{flag=1; next} /^## /{flag=0} flag')
     stdout "====================================="
-    stdout "$GREENSкрипт обновлен$NOANSI до версии $RED$version$NOANSI"
+    stdout "$GREENСкрипт обновлен$NOANSI до версии $RED$version$NOANSI"
     stdout "$YELLOWИзменения в версии $version:$NOANSI"
     stdout "$CIAN$changes$NOANSI"
     echo "$version" > "$HOME/qq/version.txt"
-    stdout "$YELLOW\nДля обновления скрипта запустите новый терминал или выполните команду:$NOANSI\n$CIANsource ~/.bashrc$NOANSI"
+    stdout "$YELLOW\nДля обновления скрипта запустите новый терминал или выполните команду:$NOANSI\n$CIAN source ~/.bashrc$NOANSI"
 }
 
 show_help() {
@@ -147,7 +147,7 @@ list_containers() {
         done
     else
         stdout "$RED[END] Нет запущенных контейнеров$NOANSI"
-        stdout "Для просмотра всех контейнеров выполните $YELLOWqq -la$NOANSI"
+        stdout "Для просмотра всех контейнеров выполните $YELLOW qq -la$NOANSI"
     fi
 }
 
