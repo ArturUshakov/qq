@@ -42,10 +42,18 @@ declare -A commands=(
     ["--list"]="list_containers"
     ["-la"]="list_all_containers"
     ["--list-all"]="list_all_containers"
+    ["-gph"]="generate_password_hash"
+    ["--generate-password-hash"]="generate_password_hash"
 )
 
+generate_password_hash() {
+    local password=$1
+    local hash=$(php -r "echo password_hash('$password', PASSWORD_DEFAULT);")
+    echo "Hashed password: $hash"
+}
+
 check_version() {
-    local current_version=0.4.0
+    local current_version=0.5.0
     local latest_version=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/version.txt)
 
     if [ "$latest_version" != "$current_version" ]; then
@@ -74,6 +82,7 @@ show_help() {
         "qq -h, --help       Выводит это сообщение"
         "qq -l, --list       Выводит список запущенных контейнеров"
         "qq -la, --list-all  Выводит список всех контейнеров"
+        "qq -gph [password]  Генерирует хэш пароля"
         "qq [фильтр]         Останавливает все контейнеры, соответствующие фильтру"
         "qq                  Останавливает все запущенные контейнеры"
         "qq update           Выполняет обновление qq до актуальной версии"
