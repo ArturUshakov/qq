@@ -46,7 +46,7 @@ check_version() {
     local latest_version=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/version.txt)
 
     if [ "$latest_version" != "$current_version" ]; then
-        print_colored "$RED" "Доступна новая версия скрипта ($latest_version). Пожалуйста, обновите скрипт командой 'qq update'"
+        echo -e "\e[Доступна новая версия скрипта ($latest_version). Пожалуйста, обновите скрипт командой 'qq update'\e[0m"
     fi
 }
 
