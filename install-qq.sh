@@ -185,6 +185,7 @@ main() {
            exit 0
        elif [[ -n "$1" && -n "${commands[$1]}" ]]; then
         ${commands[$1]} "$2"
+        check_version
         exit 0
     elif [[ -n "$1" ]]; then
         filter="$1"
