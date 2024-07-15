@@ -23,10 +23,7 @@ alias_file="$HOME/.bash_aliases"
 # Удаление существующего алиаса и создание нового
 if grep -q "alias qq=" "$alias_file"; then
     sed -i '/alias qq=/d' "$alias_file"
-    print_colored "$GREEN" "Старый алиас qq был удален"
 fi
-
-print_colored "$GREEN" "Создаем файл qq.sh..."
 
 # Создание скрипта qq.sh
 cat > "$script_path" << 'EOF'
@@ -212,7 +209,6 @@ chmod +x "$script_path"
 
 echo "alias qq='$script_path'" >> "$alias_file"
 
-print_colored "$GREEN" "Создаем новый алиас qq..."
 print_colored "$GREEN" "Установка завершена\n"
 print_colored "$YELLOW" "Если вы скачали скрипт впервые,то выполните команду:"
 print_colored "$BLUE" "source $alias_file\n"
