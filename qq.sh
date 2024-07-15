@@ -11,6 +11,7 @@ YELLOW="\033[33m"
 BLUE="\033[34m"
 CIAN="\033[36m"
 WHITE="\033[37m"
+BASIC=""
 NOANSI="\033[0m"
 
 declare -A commands=(
@@ -24,7 +25,6 @@ declare -A commands=(
     ["--generate-password-hash"]="generate_password_hash"
     ["-i"]="qq_get_info"
     ["--info"]="qq_get_info"
-    ["--update"]="update"
 )
 
 stdout() {
@@ -37,7 +37,11 @@ qq_get_info() {
 }
 
 generate_password_hash() {
-    local password=$1
+    local password=${1:-}
+    if [ -z "$password" ]; then
+        stdout "$RED[ERROR] Пожалуйста, предоставьте пароль для хэширования$NOANSI"
+        exit 1
+    fi
     local hash=$(php -r "echo password_hash('$password', PASSWORD_DEFAULT);")
     stdout "$WHITEHashed password: $hash$NOANSI"
 }
@@ -45,7 +49,7 @@ generate_password_hash() {
 check_version() {
     local latest_version=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/version.txt)
     if [ "$latest_version" != "$VERSION" ]; then
-        stdout "$RED\nВНИМАНИЕ!$NOANSI\n$WHITEДоступна новая версия скрипта ($latest_version)$NOANSI\n$WHITEПожалуйста, обновите скрипт командой:$NOANSI\n$CIANqq --update$NOANSI"
+        stdout "$RED\nВНИМАНИЕ!$NOANSI\n$WHITEДоступна новая версия скрипта ($latest_version)$NOANSI\n$WHITEПожалуйста, обновите скрипт командой:$NOANSI\n$CIANqq update$NOANSI"
     fi
 }
 
@@ -55,7 +59,7 @@ update() {
     local version=$(echo "$changelog" | grep -E '^## \[.*\] - ' | head -n 1 | sed -E 's/^## \[([0-9.]+)\].*/\1/')
     local changes=$(echo "$changelog" | awk '/^## \['"$version"'\] - /{flag=1; next} /^## /{flag=0} flag')
     stdout "====================================="
-    stdout "$GREENСкрипт обновлен$NOANSI до версии $RED$version$NOANSI"
+    stdout "$GREENSкрипт обновлен$NOANSI до версии $RED$version$NOANSI"
     stdout "$YELLOWИзменения в версии $version:$NOANSI"
     stdout "$CIAN$changes$NOANSI"
     echo "$version" > "$HOME/qq/version.txt"
@@ -71,7 +75,7 @@ show_help() {
         "qq -gph [password]  Генерирует хэш пароля"
         "qq [фильтр]         Останавливает все контейнеры, соответствующие фильтру"
         "qq                  Останавливает все запущенные контейнеры"
-        "qq --update         Выполняет обновление qq до актуальной версии"
+        "qq update           Выполняет обновление qq до актуальной версии"
     )
 
     local max_length=0
@@ -115,7 +119,7 @@ check_containers() {
             if [ -n "${pids[$i]}" ] && ! kill -0 "${pids[$i]}" 2>/dev/null; then
                 local container_id=${container_ids[$i]}
                 local container_name=${container_names["$container_id"]}
-                if [ -n "$container_name" ]; then
+                if [ -н "$container_name" ]; then
                     stdout "$YELLOW[INFO] Остановлен контейнер: $CIAN$container_name$NOANSI"
                 else
                     stdout "$YELLOW[INFO] Остановлен контейнер: $CIAN${container_ids[$i]}$NOANSI"
@@ -135,7 +139,7 @@ stop_containers() {
 
 list_containers() {
     local containers=$(docker ps -q)
-    if [ -n "$containers" ]; then
+    if [ -н "$containers" ]; то
         mapfile -t container_ids <<< "$containers"
         mapfile -t names < <(docker inspect --format "{{.Name}}" "${container_ids[@]}" | cut -c2-)
         for name in "${names[@]}"; do
@@ -149,7 +153,7 @@ list_containers() {
 
 list_all_containers() {
     local containers=$(docker ps -a -q)
-    if [ -n "$containers" ]; then
+    if [ -н "$containers" ]; то
         mapfile -t container_ids <<< "$containers"
         mapfile -t names < <(docker inspect --format "{{.Name}}" "${container_ids[@]}" | cut -c2-)
 
@@ -176,7 +180,7 @@ list_all_containers() {
 
 _qq_completions() {
     local curr_arg="${COMP_WORDS[COMP_CWORD]}"
-    local opts="-h --help -l --list -la --list-all -gph --generate-password-hash -i --info --update"
+    local opts="-h --help -l --list -la --list-all -gph --generate-password-hash -i --info update"
     COMPREPLY=( $(compgen -W "${opts}" -- ${curr_arg}) )
 }
 
@@ -187,14 +191,14 @@ main() {
     pids=()
     filter=""
 
-    if [[ "$1" == "--update" ]]; then
+    if [[ "$1" == "update" ]]; then
         update
         exit 0
-    elif [[ -n "$1" && -n "${commands[$1]}" ]]; then
-        ${commands[$1]} "$2"
+    elif [[ -н "$1" && -н "${commands[$1]}" ]]; то
+        ${commands[$1]} "${2:-}"
         check_version
         exit 0
-    elif [[ -n "$1" ]]; then
+    elif [[ -н "$1" ]]; то
         filter="$1"
         stdout "$BLUE[START] Начинаем остановку контейнеров с фильтром: $CIAN$filter$NOANSI"
     else
@@ -203,7 +207,7 @@ main() {
 
     stop_containers
 
-    if [ -n "$containers" ]; then
+    if [ -н "$containers" ]; то
         check_containers
     else
         stdout "$RED[INFO] Нет запущенных контейнеров для остановки$NOANSI"
