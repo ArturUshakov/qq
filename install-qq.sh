@@ -62,6 +62,8 @@ update() {
 
     echo -e "====================================="
     echo -e "\e[32mСкрипт обновлен до версии $version\e[0m"
+    echo -e "\e[33mДля обновления скрипта запустите новый терминал или выполните команду:\e[0m"
+    echo -e "\e[36msource ~/.bashrc\e[0m"
     echo -e "\e[33mИзменения в версии $version:\e[0m"
     echo -e "\e[36m$changes\e[0m"
     echo "$version" > "$HOME/qq/version.txt"
