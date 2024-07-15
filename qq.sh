@@ -49,7 +49,7 @@ generate_password_hash() {
 check_version() {
     local latest_version=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/version.txt)
     if [ "$latest_version" != "$VERSION" ]; then
-        stdout "$RED\nВНИМАНИЕ!$NOANSI\n$WHITEДоступна новая версия скрипта ($latest_version)$NOANSI\n$WHITEПожалуйста, обновите скрипт командой:$NOANSI\n$CIANqq update$NOANSI"
+        stdout "$RED\nВНИМАНИЕ!$NOANSI\n$WHITEДоступна новая версия скрипта ($latest_version)$NOANSI\n$WHITEПожалуйста, обновите скрипт командой:$NOANSI\n$CIAN qq --update$NOANSI"
     fi
 }
 
@@ -75,7 +75,7 @@ show_help() {
         "qq -gph [password]  Генерирует хэш пароля"
         "qq [фильтр]         Останавливает все контейнеры, соответствующие фильтру"
         "qq                  Останавливает все запущенные контейнеры"
-        "qq update           Выполняет обновление qq до актуальной версии"
+        "qq --update         Выполняет обновление qq до актуальной версии"
     )
 
     local max_length=0
@@ -180,7 +180,7 @@ list_all_containers() {
 
 _qq_completions() {
     local curr_arg="${COMP_WORDS[COMP_CWORD]}"
-    local opts="-h --help -l --list -la --list-all -gph --generate-password-hash -i --info update"
+    local opts="-h --help -l --list -la --list-all -gph --generate-password-hash -i --info --update"
     COMPREPLY=( $(compgen -W "${opts}" -- ${curr_arg}) )
 }
 
@@ -191,7 +191,7 @@ main() {
     pids=()
     filter=""
 
-    if [[ "${1:-}" == "update" ]]; then
+    if [[ "${1:-}" == "--update" ]]; then
         update
         exit 0
     elif [[ -n "${1:-}" && -n "${commands[$1]}" ]]; then
