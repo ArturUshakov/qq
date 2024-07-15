@@ -41,6 +41,28 @@ declare -A commands=(
     ["--list-all"]="list_all_containers"
 )
 
+check_version() {
+    local current_version="0.3.0"
+    local latest_version=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/version.txt)
+
+    if [ "$latest_version" != "$current_version" ]; then
+        print_colored "$RED" "Доступна новая версия скрипта ($latest_version). Пожалуйста, обновите скрипт командой 'qq update'"
+    fi
+}
+
+update() {
+  curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/install-qq.sh | bash
+
+     changelog=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/CHANGELOG.md)
+     version=$(echo "$changelog" | grep -E '^## \[.*\] - ' | head -n 1 | sed -E 's/^## \[([0-9.]+)\].*/\1/')
+     changes=$(echo "$changelog" | awk '/^## \['"$version"'\] - /{flag=1; next} /^## /{flag=0} flag')
+
+      echo -e "\e[32mСкрипт обновлен до версии $version\e[0m"
+      echo -e "\e[33mИзменения в версии $version:\e[0m"
+      echo -e "\e[36m$changes\e[0m"
+      echo -e "\e[35mСоздатель: Артур Ушаков\e[0m"
+}
+
 show_help() {
     local cmd_descriptions=(
         "qq -h, --help       Выводит это сообщение"
@@ -48,6 +70,7 @@ show_help() {
         "qq -la, --list-all  Выводит список всех контейнеров"
         "qq [фильтр]         Останавливает все контейнеры, соответствующие фильтру"
         "qq                  Останавливает все запущенные контейнеры"
+        "qq update           Выполняет обновление qq до актуальной версии"
     )
 
     local max_length=0
@@ -156,7 +179,10 @@ main() {
     start_times=()
     filter=""
 
-    if [[ -n "$1" && -n "${commands[$1]}" ]]; then
+     if [[ "$1" == "update" ]]; then
+           update
+           exit 0
+       elif [[ -n "$1" && -n "${commands[$1]}" ]]; then
         ${commands[$1]} "$2"
         exit 0
     elif [[ -n "$1" ]]; then
@@ -174,6 +200,7 @@ main() {
         echo -e "\e[31m[INFO]\e[0m Нет запущенных контейнеров для остановки"
     fi
     echo -e "\e[34m[FINISH]\e[0m Процесс завершен"
+    check_version
 }
 
 main "$@"
@@ -191,4 +218,4 @@ print_colored "$BLUE" "source $alias_file"
 print_colored "$YELLOW" "Для получения помощи по qq выполните:"
 print_colored "$BLUE" "qq -h"
 print_colored "$YELLOW" "Для обновления скрипта можно выполнить команду:"
-print_colored "$BLUE" "curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/install-qq.sh | bash"
+print_colored "$BLUE" "qq update"
