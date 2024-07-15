@@ -19,7 +19,7 @@ function print_colored {
             color_code="34"
             ;;
         *)
-            color_code="0"
+            color_code="0" # default color
             ;;
     esac
     shift
@@ -36,9 +36,9 @@ files=("qq.sh" "qq_completions.sh" "CHANGELOG.md")
 
 for file in "${files[@]}"; do
     curl -s "$REPO_URL/$file" -o "$INSTALL_DIR/$file"
-    chmod +x "$INSTALL_DIR/$file"
     if [ $? -eq 0 ]; then
         print_colored green "$file загружен успешно."
+        chmod +rx "$INSTALL_DIR/$file"
     else
         print_colored red "Ошибка загрузки $file."
     fi
