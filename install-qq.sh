@@ -60,7 +60,6 @@ update() {
       echo -e "\e[32m\n\nСкрипт обновлен до версии $version\e[0m"
       echo -e "\e[33mИзменения в версии $version:\e[0m"
       echo -e "\e[36m$changes\e[0m"
-      echo -e "\e[35mСоздатель: Артур Ушаков\e[0m"
 }
 
 show_help() {
