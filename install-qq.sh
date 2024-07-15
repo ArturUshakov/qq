@@ -15,10 +15,18 @@ BLUE="34"
 YELLOW="33"
 RED="31"
 
-# Путь к скрипту
-script_path="$HOME/qq.sh"
+# Путь к скрипту и файлу версии
+script_dir="$HOME/qq"
+script_path="$script_dir/qq.sh"
+version_file="$script_dir/version.txt"
 alias_file="$HOME/.bash_aliases"
 [ ! -f "$alias_file" ] && alias_file="$HOME/.bashrc"
+
+# Создание папки для скрипта, если она не существует
+mkdir -p "$script_dir"
+
+# Создание файла с текущей версией
+echo "0.3.2" > "$version_file"
 
 # Удаление существующего алиаса и создание нового
 if grep -q "alias qq=" "$alias_file"; then
@@ -39,7 +47,7 @@ declare -A commands=(
 )
 
 check_version() {
-    local current_version="0.3.2"
+    local current_version=$(cat "$HOME/qq/version.txt")
     local latest_version=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/version.txt)
 
     if [ "$latest_version" != "$current_version" ]; then
@@ -48,16 +56,17 @@ check_version() {
 }
 
 update() {
-  curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/install-qq.sh | bash
+    curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/install-qq.sh | bash
 
-   changelog=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/CHANGELOG.md)
-   version=$(echo "$changelog" | grep -E '^## \[.*\] - ' | head -n 1 | sed -E 's/^## \[([0-9.]+)\].*/\1/')
-   changes=$(echo "$changelog" | awk '/^## \['"$version"'\] - /{flag=1; next} /^## /{flag=0} flag')
+    changelog=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/CHANGELOG.md)
+    version=$(echo "$changelog" | grep -E '^## \[.*\] - ' | head -n 1 | sed -E 's/^## \[([0-9.]+)\].*/\1/')
+    changes=$(echo "$changelog" | awk '/^## \['"$version"'\] - /{flag=1; next} /^## /{flag=0} flag')
 
     echo -e "====================================="
     echo -e "\e[32mСкрипт обновлен до версии $version\e[0m"
     echo -e "\e[33mИзменения в версии $version:\e[0m"
     echo -e "\e[36m$changes\e[0m"
+    echo "$version" > "$HOME/qq/version.txt"
 }
 
 show_help() {
@@ -176,10 +185,10 @@ main() {
     start_times=()
     filter=""
 
-     if [[ "$1" == "update" ]]; then
-           update
-           exit 0
-       elif [[ -n "$1" && -n "${commands[$1]}" ]]; then
+    if [[ "$1" == "update" ]]; then
+        update
+        exit 0
+    elif [[ -n "$1" && -n "${commands[$1]}" ]]; then
         ${commands[$1]} "$2"
         check_version
         exit 0
@@ -210,7 +219,7 @@ chmod +x "$script_path"
 echo "alias qq='$script_path'" >> "$alias_file"
 
 print_colored "$GREEN" "Установка завершена\n"
-print_colored "$YELLOW" "Если вы скачали скрипт впервые,то выполните команду:"
+print_colored "$YELLOW" "Если вы скачали скрипт впервые, то выполните команду:"
 print_colored "$BLUE" "source $alias_file\n"
 print_colored "$YELLOW" "Для получения помощи по qq выполните:"
 print_colored "$BLUE" "qq -h"
