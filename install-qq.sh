@@ -220,6 +220,6 @@ echo "alias qq='$script_path'" >> "$alias_file"
 
 print_colored "$GREEN" "Установка завершена\n"
 print_colored "$YELLOW" "Если вы скачали скрипт впервые, то выполните команду:"
-print_colored "$BLUE" "source $alias_file\n"
+print_colored "$BLUE" "source ~/.bashrc\n"
 print_colored "$YELLOW" "Для получения помощи по qq выполните:"
 print_colored "$BLUE" "qq -h"
