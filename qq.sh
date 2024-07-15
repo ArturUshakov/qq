@@ -280,6 +280,11 @@ main() {
   pids=()
   filter=""
 
+  if [[ "${1}" == "--update" ]]; then
+  update
+  exit 0;
+  fi
+
   if [[ "$#" -eq 0 ]]; then
     stdout "$BLUE[START] Начинаем остановку всех контейнеров...$NOANSI"
     stop_containers
