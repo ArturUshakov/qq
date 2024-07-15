@@ -1,31 +1,34 @@
-#!/bin/bash
+# Функция для вывода цветного текста
+print_colored() {
+    echo -e "\033[${1}m${2}\033[0m"
+}
+
+# Проверка наличия Docker
+if ! command -v docker &> /dev/null; then
+    print_colored "31" "Docker не найден. Установите Docker и повторите попытку."
+    exit 1
+fi
 
 # Цвета для вывода
-GREEN="\033[32m"
-BLUE="\033[34m"
-YELLOW="\033[33m"
-RED="\033[31m"
-RESET="\033[0m"
+GREEN="32"
+BLUE="34"
+YELLOW="33"
+RED="31"
 
 # Путь к скрипту
 script_path="$HOME/qq.sh"
+alias_file="$HOME/.bash_aliases"
+[ ! -f "$alias_file" ] && alias_file="$HOME/.bashrc"
 
-# Определение файла для добавления алиаса
-if [ -f "$HOME/.bash_aliases" ]; then
-    alias_file="$HOME/.bash_aliases"
-else
-    alias_file="$HOME/.bashrc"
-fi
-
-clean_install=true
-# Удаление старого алиаса qq, если он существует
+# Удаление существующего алиаса и создание нового
 if grep -q "alias qq=" "$alias_file"; then
     sed -i '/alias qq=/d' "$alias_file"
-    echo -e "${GREEN}Старый алиас qq был удален${RESET}"
+    print_colored "$GREEN" "Старый алиас qq был удален"
 fi
 
-echo -e "${GREEN}Создаем файл qq.sh...${RESET}"
+print_colored "$GREEN" "Создаем файл qq.sh..."
 
+# Создание скрипта qq.sh
 cat > "$script_path" << 'EOF'
 #!/bin/bash
 
@@ -169,13 +172,13 @@ EOF
 
 chmod +x "$script_path"
 
-alias_exists=$(grep -q "alias qq=" "$alias_file" && echo "yes" || echo "no")
+echo "alias qq='$script_path'" >> "$alias_file"
+print_colored "$GREEN" "Создаем новый алиас qq..."
 
-if $clean_install || [ "$alias_exists" = "no" ]; then
-    echo -e "${GREEN}Создаем новый алиас qq...${RESET}"
-    echo "alias qq='$script_path'" >> "$alias_file"
-fi
-
-echo -e "${GREEN}Установка завершена${RESET}"
-echo -e "Чтобы применить изменения, выполните команду ${BLUE}source $alias_file${RESET}"
-echo -e "Для получения помощи по qq выполните ${BLUE}qq -h${RESET}"
+print_colored "$GREEN" "Установка завершена"
+print_colored "$YELLOW" "Чтобы применить изменения, выполните команду:"
+print_colored "$BLUE" "source $alias_file"
+print_colored "$YELLOW" "Для получения помощи по qq выполните:"
+print_colored "$BLUE" "qq -h"
+print_colored "$YELLOW" "Для обновления скрипта можно выполнить команду:"
+print_colored "$BLUE" "curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/install-qq.sh | bash"
