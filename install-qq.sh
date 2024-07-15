@@ -57,7 +57,7 @@ update() {
      version=$(echo "$changelog" | grep -E '^## \[.*\] - ' | head -n 1 | sed -E 's/^## \[([0-9.]+)\].*/\1/')
      changes=$(echo "$changelog" | awk '/^## \['"$version"'\] - /{flag=1; next} /^## /{flag=0} flag')
 
-      echo -e "\e[=====================================\e[0m"
+      echo -e "====================================="
       echo -e "\e[32mСкрипт обновлен до версии $version\e[0m"
       echo -e "\e[33mИзменения в версии $version:\e[0m"
       echo -e "\e[36m$changes\e[0m"
