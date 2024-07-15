@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Функция для вывода цветного текста
 print_colored() {
     echo -e "\033[${1}m${2}\033[0m"
@@ -26,7 +28,7 @@ alias_file="$HOME/.bash_aliases"
 mkdir -p "$script_dir"
 
 # Создание файла с текущей версией
-echo "0.3.2" > "$version_file"
+echo "0.4.0" > "$version_file"
 
 # Удаление существующего алиаса и создание нового
 if grep -q "alias qq=" "$alias_file"; then
