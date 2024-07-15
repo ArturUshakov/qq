@@ -26,6 +26,7 @@ declare -A COMMANDS_MANAGE=(
     ["--gitlab"]="open_gitlab|Открывает страницу gitlab.efko.ru"
     ["-pb"]="prune_builder|Удаляет неиспользуемые объекты сборки"
     ["--prune-builder"]="prune_builder|Удаляет неиспользуемые объекты сборки"
+    ["-sc"]="start_filtered_containers|Запускает контейнеры по фильтру"
 )
 
 #COMMANDS_HELP
@@ -36,19 +37,19 @@ function print_help {
     print_colored blue "\nСправка:"
     for key in "${!COMMANDS_HELP[@]}"; do
         IFS='|' read -r func desc <<< "${COMMANDS_HELP[$key]}"
-        printf "$(print_colored green "%-30s") $(print_colored yellow "%s")\n" "$key" "$desc"
+        printf "    $(print_colored green "%-30s") $(print_colored yellow "%s")\n" "$key" "$desc"
     done
 
     print_colored blue "\nСписки:"
     for key in "${!COMMANDS_LIST[@]}"; do
         IFS='|' read -r func desc <<< "${COMMANDS_LIST[$key]}"
-        printf "$(print_colored green "%-30s") $(print_colored yellow "%s")\n" "$key" "$desc"
+        printf "    $(print_colored green "%-30s") $(print_colored yellow "%s")\n" "$key" "$desc"
     done
 
     print_colored blue "\nУправление:"
     for key in "${!COMMANDS_MANAGE[@]}"; do
         IFS='|' read -r func desc <<< "${COMMANDS_MANAGE[$key]}"
-        printf "$(print_colored green "%-30s") $(print_colored yellow "%s")\n" "$key" "$desc"
+        printf "    $(print_colored green "%-30s") $(print_colored yellow "%s")\n" "$key" "$desc"
     done
 }
 
@@ -102,6 +103,31 @@ function check_for_updates {
 }
 
 #COMMANDS_LIST
+function start_filtered_containers {
+    if [ -z "$1" ]; then
+        echo "Пожалуйста, укажите фильтр для запуска контейнеров."
+        return
+    fi
+
+    local filter="$1"
+    local container_ids=($(docker ps -a --filter "name=$filter" --format "{{.ID}}"))
+
+    if [ ${#container_ids[@]} -eq 0 ]; then
+        echo "Контейнеры, соответствующие фильтру '$filter', не найдены."
+        return
+    fi
+
+    print_colored blue "Запуск контейнеров, соответствующих фильтру '$filter':"
+    print_colored blue "-----------------------------------------------------------"
+
+    for container_id in "${container_ids[@]}"; do
+        local container_name=$(docker ps -a --filter "id=$container_id" --format "{{.Names}}")
+        docker start "$container_id" > /dev/null
+        printf "%s\n%s\n%s\n" "$(print_colored green "ID: $container_id")" "$(print_colored yellow "Имя: $container_name")" "$(print_colored blue "Запущен")"
+        print_colored blue "-----------------------------------------------------------"
+    done
+}
+
 function list_running_containers {
     print_colored blue "Запущенные контейнеры:"
     print_colored blue "-------------------------------------------------------------------------------------------------"
