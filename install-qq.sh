@@ -53,14 +53,13 @@ check_version() {
 update() {
   curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/install-qq.sh | bash
 
-     changelog=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/CHANGELOG.md)
-     version=$(echo "$changelog" | grep -E '^## \[.*\] - ' | head -n 1 | sed -E 's/^## \[([0-9.]+)\].*/\1/')
-     changes=$(echo "$changelog" | awk '/^## \['"$version"'\] - /{flag=1; next} /^## /{flag=0} flag')
+   changelog=$(curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/CHANGELOG.md)
+   version=$(echo "$changelog" | grep -E '^## \[.*\] - ' | head -n 1 | sed -E 's/^## \[([0-9.]+)\].*/\1/')
+   changes=$(echo "$changelog" | awk '/^## \['"$version"'\] - /{flag=1; next} /^## /{flag=0} flag')
 
-      echo -e "====================================="
-      echo -e "\e[32mСкрипт обновлен до версии $version\e[0m"
-      echo -e "\e[33mИзменения в версии $version:\e[0m"
-      echo -e "\e[36m$changes\e[0m"
+    echo -e "\e[32mСкрипт обновлен до версии $version\e[0m"
+    echo -e "\e[33mИзменения в версии $version:\e[0m"
+    echo -e "\e[36m$changes\e[0m"
 }
 
 show_help() {
@@ -217,4 +216,4 @@ print_colored "$GREEN" "Установка завершена\n"
 print_colored "$YELLOW" "Если вы скачали скрипт впервые,то выполните команду:"
 print_colored "$BLUE" "source $alias_file\n"
 print_colored "$YELLOW" "Для получения помощи по qq выполните:"
-print_colored "$BLUE" "qq -h\n"
+print_colored "$BLUE" "qq -h"
