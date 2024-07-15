@@ -95,7 +95,7 @@ function check_for_updates {
     local latest_version=$(get_latest_version)
 
     if [ "$installed_version" != "$latest_version" ]; then
-        print_colored red "Внимание!"
+        print_colored red "\nВнимание!"
         print_colored yellow "Доступна новая версия qq: $latest_version. Ваша версия: $installed_version."
         print_colored yellow "Используйте 'qq --update' для обновления до последней версии."
     fi
