@@ -129,7 +129,9 @@ list_all_containers() {
         mapfile -t container_ids <<< "$containers"
         mapfile -t names < <(docker inspect --format "{{.Name}}" "${container_ids[@]}" | cut -c2-)
 
-        printf "%-40s %-10s\n" "==========" "======"
+        printf "%-55s\n" "---------------------------------------------------------"
+        printf "| %-40s | %-10s |\n" "Container Name" "Status"
+        printf "%-55s\n" "---------------------------------------------------------"
 
         for i in "${!container_ids[@]}"; do
             local status=$(docker inspect --format "{{.State.Status}}" "${container_ids[$i]}")
@@ -139,9 +141,10 @@ list_all_containers() {
                 status_text="ACTIVE"
                 status_color="\033[32m"  # Green for ACTIVE
             fi
-            printf "%-40s %b%-10s\033[0m\n" "${names[$i]}" "$status_color" "$status_text"
+            printf "| %-40s | %b%-10s\033[0m |\n" "${names[$i]}" "$status_color" "$status_text"
         done
-        printf "%-40s %-10s\n" "==========" "======"
+
+        printf "%-55s\n" "---------------------------------------------------------"
     else
         echo -e "\033[31m[ERROR]\033[0m Нет контейнеров"
     fi
