@@ -120,7 +120,7 @@ function check_for_updates {
    if [ "$(printf '%s\n' "$latest_version" "$installed_version" | sort -V | head -n1)" != "$latest_version" ]; then
         print_colored red "\nВнимание!"
         print_colored yellow "Доступна новая версия qq: $latest_version. Ваша версия: $installed_version."
-        print_colored yellow "Используйте 'qq --update' для обновления до последней версии."
+        print_colored yellow "Используйте 'qq update' для обновления до последней версии."
     fi
 }
 

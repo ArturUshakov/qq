@@ -5,7 +5,7 @@ _qq_completions() {
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    commands="-h --help -i --info -l --list -la --list-all -li --list-images -ri -gph --update --install-docker --install-make --gitlab -pb --prune-builder -sc -dni -d down"
+    commands="-h --help qq -i --info -l --list -la --list-all -li --list-images -ri -gph -d down update --install-docker --install-make --gitlab -pb --prune-builder up -dni"
 
     case "${prev}" in
         -ri)
