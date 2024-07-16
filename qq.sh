@@ -1,19 +1,14 @@
 #!/bin/bash
 
 declare -A COMMANDS_HELP=(
-    ["-h"]="print_help|Выводит это сообщение"
-    ["--help"]="print_help|Выводит это сообщение"
-    ["-i"]="script_info|Выводит информацию о скрипте"
-    ["--info"]="script_info|Выводит информацию о скрипте"
+    ["-h,-help"]="print_help|Выводит это сообщение"
+    ["-i,--info"]="script_info|Выводит информацию о скрипте"
 )
 
 declare -A COMMANDS_LIST=(
-    ["-l"]="list_running_containers|Выводит список запущенных контейнеров докера"
-    ["--list"]="list_running_containers|Выводит список запущенных контейнеров докера"
-    ["-la"]="list_all_containers|Выводит список всех контейнеров"
-    ["--list-all"]="list_all_containers|Выводит список всех контейнеров"
-    ["-li"]="list_images|Выводит список всех образов"
-    ["--list-images"]="list_images|Выводит список всех образов"
+    ["-l,--list"]="list_running_containers|Выводит список запущенных контейнеров докера"
+    ["-la,--list-all"]="list_all_containers|Выводит список всех контейнеров"
+    ["-li,--list-images"]="list_images|Выводит список всех образов"
 )
 
 declare -A COMMANDS_MANAGE=(
@@ -24,8 +19,7 @@ declare -A COMMANDS_MANAGE=(
     ["--install-docker"]="install_docker|Выполняет полную установку докера"
     ["--install-make"]="install_make|Выполняет установку утилиты make"
     ["--gitlab"]="open_gitlab|Открывает страницу gitlab.efko.ru"
-    ["-pb"]="prune_builder|Удаляет неиспользуемые объекты сборки"
-    ["--prune-builder"]="prune_builder|Удаляет неиспользуемые объекты сборки"
+    ["-pb,--prune-builder"]="prune_builder|Удаляет неиспользуемые объекты сборки"
     ["-sc"]="start_filtered_containers|Запускает контейнеры по фильтру"
     ["-dni"]="cleanup_docker_images|Удаляет <none> images"
 )
@@ -409,15 +403,32 @@ function main {
     local COMMAND=""
 
     if [[ "$1" == -* ]]; then
-        if [[ -n "${COMMANDS_HELP[$1]}" ]]; then
-            COMMAND="${COMMANDS_HELP[$1]}"
-        elif [[ -n "${COMMANDS_LIST[$1]}" ]]; then
-            COMMAND="${COMMANDS_LIST[$1]}"
-        elif [[ -n "${COMMANDS_MANAGE[$1]}" ]];then
-            COMMAND="${COMMANDS_MANAGE[$1]}"
+        for key in "${!COMMANDS_HELP[@]}"; do
+            if [[ ",${key}," == *",$1,"* ]]; then
+                COMMAND="${COMMANDS_HELP[$key]}"
+                break
+            fi
+        done
+
+        if [[ -z "$COMMAND" ]]; then
+            for key in "${!COMMANDS_LIST[@]}"; do
+                if [[ ",${key}," == *",$1,"* ]]; then
+                    COMMAND="${COMMANDS_LIST[$key]}"
+                    break
+                fi
+            done
         fi
 
-        if [ -n "$COMMAND" ]; then
+        if [[ -z "$COMMAND" ]]; then
+            for key in "${!COMMANDS_MANAGE[@]}"; do
+                if [[ ",${key}," == *",$1,"* ]]; then
+                    COMMAND="${COMMANDS_MANAGE[$key]}"
+                    break
+                fi
+            done
+        fi
+
+        if [[ -n "$COMMAND" ]]; then
             IFS='|' read -r func desc <<< "$COMMAND"
             shift
             $func "$@"
@@ -425,7 +436,7 @@ function main {
             echo -e "Неизвестная команда: $(print_colored red "$1")"
         fi
     else
-        if [ -z "$1" ]; then
+        if [[ -z "$1" ]]; then
             stop_all_containers
         else
             stop_filtered_containers "$1"
