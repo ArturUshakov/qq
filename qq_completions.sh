@@ -5,7 +5,7 @@ _qq_completions() {
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    commands="-h --help qq -i --info -l --list -la --list-all -li --list-images -ri -gph -d down update --install-docker --install-make --gitlab -pb --prune-builder up -dni"
+    commands="-h help qq -i info -l list -la list-all -li list-images -ri -gph -d down update -id install-docker -im install-make -gl gitlab -pb prune-builder up -dni generate-password-hash"
 
     case "${prev}" in
         -ri)
