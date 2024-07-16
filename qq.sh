@@ -27,6 +27,7 @@ declare -A COMMANDS_MANAGE=(
     ["-pb"]="prune_builder|Удаляет неиспользуемые объекты сборки"
     ["--prune-builder"]="prune_builder|Удаляет неиспользуемые объекты сборки"
     ["-sc"]="start_filtered_containers|Запускает контейнеры по фильтру"
+    ["-dni"]="cleanup_docker_images|Удаляет <none> images"
 )
 
 #COMMANDS_HELP
@@ -238,6 +239,11 @@ function stop_filtered_containers {
         printf "%s\n%s\n%s\n" "$(print_colored green "ID: $container_id")" "$(print_colored yellow "Имя: $container_name")" "$(print_colored red "Остановлен")"
         print_colored blue "-----------------------------------------------------------"
     done
+}
+
+cleanup_docker_images() {
+    docker images -f "dangling=true" -q | xargs -r docker rmi
+    print_colored green "Все images <none> очищены!"
 }
 
 function stop_all_containers {

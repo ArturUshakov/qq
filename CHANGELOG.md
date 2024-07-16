@@ -5,6 +5,11 @@
 Формат данного файла основан на [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 и этот проект придерживается [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2024-07-16
+
+- Реализовано
+  - команда -dni удаляет все <none> images
+
 ## [0.7.0] - 2024-07-15
 
 - Реализовано
