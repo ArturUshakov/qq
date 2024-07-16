@@ -1,9 +1,9 @@
 # Changelog
 
-Все заметные изменения в этом проекте будут задокументированы в этом файле.
+В этом файле ведется учет изменений проекта
 
-Формат данного файла основан на [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-и этот проект придерживается [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Формат основан на [стандарте формата CHANGELOG](https://keepachangelog.com/en/1.0.0/),
+и придерживается [правил версионирования](https://semver.org/spec/v2.0.0.html).
 
 ## [0.8.0] - 2024-07-16
 
