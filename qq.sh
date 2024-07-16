@@ -1,7 +1,7 @@
 #!/bin/bash
 
 declare -A COMMANDS_HELP=(
-    ["-h,-help"]="print_help|Выводит это сообщение"
+    ["-h,--help,qq"]="print_help|Выводит это сообщение"
     ["-i,--info"]="script_info|Выводит информацию о скрипте"
 )
 
@@ -12,15 +12,15 @@ declare -A COMMANDS_LIST=(
 )
 
 declare -A COMMANDS_MANAGE=(
-    ["-ri"]="remove_image|Удаляет образ по версии"
+    ["-ri"]="remove_image|Удаляет образ по <версии>"
     ["-gph"]="generate_password_hash|Генерирует хэш пароля"
-    ["qq"]="stop_all_containers|Останавливает все запущенные контейнеры"
-    ["--update"]="update_script|Выполняет обновление qq до актуальной версии"
+    ["-d,down"]="stop_all_containers|Останавливает все запущенные контейнеры, фильтр по <имени>"
+    ["update"]="update_script|Выполняет обновление qq до актуальной версии"
     ["--install-docker"]="install_docker|Выполняет полную установку докера"
     ["--install-make"]="install_make|Выполняет установку утилиты make"
     ["--gitlab"]="open_gitlab|Открывает страницу gitlab.efko.ru"
     ["-pb,--prune-builder"]="prune_builder|Удаляет неиспользуемые объекты сборки"
-    ["-sc"]="start_filtered_containers|Запускает контейнеры по фильтру"
+    ["up"]="start_filtered_containers|Запускает контейнеры по фильтру <имя>"
     ["-dni"]="cleanup_docker_images|Удаляет <none> images"
 )
 
@@ -78,12 +78,39 @@ function get_version {
 function script_info {
     print_colored blue "QQ Script Information"
     echo "Repository: $(print_colored green "https://github.com/ArturUshakov/qq")"
-    echo "Version: $(print_colored yellow "$(get_version)")"
     echo "Creator: $(print_colored green "https://t.me/Mariores")"
+    echo "Version: $(print_colored yellow "$(get_version)")"
+    echo ""
+    get_latest_tag_info
 }
 
 function get_latest_version {
     curl -s "https://raw.githubusercontent.com/ArturUshakov/qq/master/CHANGELOG.md" | grep -m 1 -oP '(?<=## \[)\d+\.\d+\.\d+(?=\])'
+}
+
+function get_latest_tag_info {
+    local changelog_file="$HOME/qq/CHANGELOG.md"
+
+    if [[ ! -f "$changelog_file" ]]; then
+        echo -e "$(print_colored red "Файл CHANGELOG.md не найден.")"
+        return
+    fi
+
+    local latest_tag_line=$(grep -m 1 -oP '^## \[\d+\.\d+\.\d+\] - \d{4}-\d{2}-\d{2}' "$changelog_file")
+    if [[ -z "$latest_tag_line" ]]; then
+        echo -e "$(print_colored red "Тэги не найдены в файле CHANGELOG.md.")"
+        return
+    fi
+
+    local latest_tag_index=$(grep -n -m 1 -oP '^## \[\d+\.\d+\.\d+\] - \d{4}-\d{2}-\d{2}' "$changelog_file" | cut -d: -f1)
+
+    local output=$(sed -n "${latest_tag_index},/^## \[/p" "$changelog_file" | sed '$d')
+
+    output=$(echo "$output" | sed -E "s/## \[([0-9]+\.[0-9]+\.[0-9]+)\] - ([0-9]{4}-[0-9]{2}-[0-9]{2})/$(print_colored green "## [\1]") - $(print_colored yellow "\2")/")
+    output=$(echo "$output" | sed -E "s/^-\s(.*)/$(print_colored cyan "- \1")/")
+    output=$(echo "$output" | sed -E "s/^  -\s(.*)/  $(print_colored blue "- \1")/")
+
+    echo -e "$output"
 }
 
 function check_for_updates {
@@ -113,43 +140,31 @@ function start_filtered_containers {
     fi
 
     print_colored blue "Запуск контейнеров, соответствующих фильтру '$filter':"
-    print_colored blue "-----------------------------------------------------------"
 
     for container_id in "${container_ids[@]}"; do
         local container_name=$(docker ps -a --filter "id=$container_id" --format "{{.Names}}")
         docker start "$container_id" > /dev/null
-        printf "%s\n%s\n%s\n" "$(print_colored green "ID: $container_id")" "$(print_colored yellow "Имя: $container_name")" "$(print_colored blue "Запущен")"
-        print_colored blue "-----------------------------------------------------------"
+        printf "%s%s\n" "$(print_colored green "$container_name ")" "$(print_colored red "Запущен")"
     done
 }
 
 function list_running_containers {
-    print_colored blue "Запущенные контейнеры:"
-    print_colored blue "-------------------------------------------------------------------------------------------------"
-    printf "%-40s %-55s %s\n" "$(print_colored blue "ID")" "$(print_colored blue "ИМЯ")" "$(print_colored blue "СТАТУС")"
-    print_colored blue "-------------------------------------------------------------------------------------------------"
-
-    docker ps --format "{{.ID}}\t{{.Names}}\t{{.Status}}" | while IFS=$'\t' read -r id name status; do
-        id_col=$(print_colored green "$id")
-        name_col=$(print_colored yellow "$name")
+    print_colored red "Запущенные контейнеры:"
+    docker ps --format "{{.Names}}\t{{.Status}}" | while IFS=$'\t' read -r name status; do
+        name_col=$(print_colored green "$name")
         status_col=$(print_colored red "$status")
 
-        printf "%-35s %-55s %s\n" "$id_col" "$name_col" "$status_col"
+        printf "%-55s %s\n"  "$name_col" "$status_col"
     done
 }
 
 function list_all_containers {
-       print_colored blue "Запущенные контейнеры:"
-    print_colored blue "-------------------------------------------------------------------------------------------------"
-    printf "%-40s %-55s %s\n" "$(print_colored blue "ID")" "$(print_colored blue "ИМЯ")" "$(print_colored blue "СТАТУС")"
-    print_colored blue "-------------------------------------------------------------------------------------------------"
-
-    docker ps -a --format "{{.ID}}\t{{.Names}}\t{{.Status}}" | while IFS=$'\t' read -r id name status; do
-        id_col=$(print_colored green "$id")
-        name_col=$(print_colored yellow "$name")
+       print_colored red "Запущенные контейнеры:"
+    docker ps -a --format "{{.Names}}\t{{.Status}}" | while IFS=$'\t' read -r name status; do
+        name_col=$(print_colored green "$name")
         status_col=$(print_colored red "$status")
 
-        printf "%-35s %-55s %s\n" "$id_col" "$name_col" "$status_col"
+        printf "%-55s %s\n"  "$name_col" "$status_col"
     done
 }
 
@@ -229,7 +244,7 @@ function stop_filtered_containers {
     for container_id in "${container_ids[@]}"; do
         local container_name=$(docker ps --filter "id=$container_id" --format "{{.Names}}")
         docker stop "$container_id" > /dev/null
-        printf "%s%s\n" "$(print_colored yellow "$container_name ")" "$(print_colored red "Остановлен")"
+        printf "%s%s\n" "$(print_colored green "$container_name ")" "$(print_colored red "Остановлен")"
     done
 }
 
@@ -251,7 +266,7 @@ function stop_all_containers {
    for container_id in "${container_ids[@]}"; do
         local container_name=$(docker ps --filter "id=$container_id" --format "{{.Names}}")
         docker stop "$container_id" > /dev/null
-        printf "%s%s\n" "$(print_colored yellow "$container_name ")" "$(print_colored red "Остановлен")"
+        printf "%s%s\n" "$(print_colored green "$container_name ")" "$(print_colored red "Остановлен")"
     done
 }
 
@@ -274,6 +289,9 @@ function update_script {
     done
 
     print_colored green "Обновление завершено."
+
+    print_colored blue "Последние обновления:\n"
+    get_latest_tag_info
 }
 
 function install_docker {
@@ -398,45 +416,52 @@ function prune_builder {
 function main {
     local COMMAND=""
 
-    if [[ "$1" == -* ]]; then
-        for key in "${!COMMANDS_HELP[@]}"; do
-            if [[ ",${key}," == *",$1,"* ]]; then
-                COMMAND="${COMMANDS_HELP[$key]}"
+    if [[ -z "$1" ]]; then
+        print_help
+        return
+    fi
+
+    local ARG="$1"
+    shift
+
+    for key in "${!COMMANDS_HELP[@]}"; do
+        if [[ ",${key}," == *",$ARG,"* ]]; then
+            COMMAND="${COMMANDS_HELP[$key]}"
+            break
+        fi
+    done
+
+    if [[ -z "$COMMAND" ]]; then
+        for key in "${!COMMANDS_LIST[@]}"; do
+            if [[ ",${key}," == *",$ARG,"* ]]; then
+                COMMAND="${COMMANDS_LIST[$key]}"
                 break
             fi
         done
+    fi
 
-        if [[ -z "$COMMAND" ]]; then
-            for key in "${!COMMANDS_LIST[@]}"; do
-                if [[ ",${key}," == *",$1,"* ]]; then
-                    COMMAND="${COMMANDS_LIST[$key]}"
-                    break
-                fi
-            done
-        fi
+    if [[ -z "$COMMAND" ]]; then
+        for key in "${!COMMANDS_MANAGE[@]}"; do
+            if [[ ",${key}," == *",$ARG,"* ]]; then
+                COMMAND="${COMMANDS_MANAGE[$key]}"
+                break
+            fi
+        done
+    fi
 
-        if [[ -z "$COMMAND" ]]; then
-            for key in "${!COMMANDS_MANAGE[@]}"; do
-                if [[ ",${key}," == *",$1,"* ]]; then
-                    COMMAND="${COMMANDS_MANAGE[$key]}"
-                    break
-                fi
-            done
-        fi
-
-        if [[ -n "$COMMAND" ]]; then
-            IFS='|' read -r func desc <<< "$COMMAND"
-            shift
-            $func "$@"
+    if [[ -n "$COMMAND" ]]; then
+        IFS='|' read -r func desc <<< "$COMMAND"
+        if [[ "$ARG" == "down" || "$ARG" == "-d" ]]; then
+            if [[ -z "$1" ]]; then
+                stop_all_containers
+            else
+                stop_filtered_containers "$1"
+            fi
         else
-            echo -e "Неизвестная команда: $(print_colored red "$1")"
+            $func "$@"
         fi
     else
-        if [[ -z "$1" ]]; then
-            stop_all_containers
-        else
-            stop_filtered_containers "$1"
-        fi
+        echo -e "Неизвестная команда: $(print_colored red "$ARG")"
     fi
 
     check_for_updates
