@@ -225,13 +225,11 @@ function stop_filtered_containers {
     fi
 
     print_colored blue "Остановка контейнеров, соответствующих фильтру '$filter':"
-    print_colored blue "-----------------------------------------------------------"
 
     for container_id in "${container_ids[@]}"; do
         local container_name=$(docker ps --filter "id=$container_id" --format "{{.Names}}")
         docker stop "$container_id" > /dev/null
-        printf "%s\n%s\n%s\n" "$(print_colored green "ID: $container_id")" "$(print_colored yellow "Имя: $container_name")" "$(print_colored red "Остановлен")"
-        print_colored blue "-----------------------------------------------------------"
+        printf "%s%s\n" "$(print_colored yellow "$container_name ")" "$(print_colored red "Остановлен")"
     done
 }
 
@@ -249,13 +247,11 @@ function stop_all_containers {
     fi
 
     print_colored blue "Остановка всех запущенных контейнеров:"
-    print_colored blue "-----------------------------------------------------------"
 
    for container_id in "${container_ids[@]}"; do
         local container_name=$(docker ps --filter "id=$container_id" --format "{{.Names}}")
         docker stop "$container_id" > /dev/null
-        printf "%s\n%s\n%s\n" "$(print_colored green "ID: $container_id")" "$(print_colored yellow "Имя: $container_name")" "$(print_colored red "Остановлен")"
-        print_colored blue "-----------------------------------------------------------"
+        printf "%s%s\n" "$(print_colored yellow "$container_name ")" "$(print_colored red "Остановлен")"
     done
 }
 
