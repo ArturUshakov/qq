@@ -34,11 +34,11 @@ jobs:
 
       - name: Run shellcheck
         run: |
-          shellcheck ./path/to/your/scripts/*.sh
+          shellcheck ./*.sh
 
       - name: Run shfmt
         run: |
-          shfmt -w ./path/to/your/scripts/*.sh
+          shfmt -w ./*.sh
 
 
   test:
