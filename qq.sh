@@ -163,6 +163,11 @@ function list_images {
 }
 
 function remove_image {
+    if [ "$1" = "<none>" ]; then
+        cleanup_docker_images
+        return
+    fi
+
     if [ -z "$1" ]; then
         echo "Ой! Пожалуйста, укажите версию для удаления."
         return
