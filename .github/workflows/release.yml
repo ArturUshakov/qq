@@ -20,14 +20,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install shfmt
+      - name: Install Go
         run: |
           sudo apt-get install -y software-properties-common
           sudo add-apt-repository ppa:longsleep/golang-backports -y
           sudo apt-get update
           sudo apt-get install -y golang-go
+
+      - name: Install shfmt
+        run: |
           go install mvdan.cc/sh/v3/cmd/shfmt@latest
-          export PATH=$PATH:$(go env GOPATH)/bin
+          echo "$HOME/go/bin" >> $GITHUB_PATH
 
       - name: Run shfmt
         run: |
