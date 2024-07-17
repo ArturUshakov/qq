@@ -1,28 +1,6 @@
 #!/bin/bash
 
-declare -A COMMANDS_HELP=(
-    ["-h,help,qq"]="print_help|Выводит это сообщение"
-    ["-i,info"]="script_info|Выводит информацию о скрипте"
-)
-
-declare -A COMMANDS_LIST=(
-    ["-l,list"]="list_running_containers|Выводит список запущенных контейнеров докера"
-    ["-la,list-all"]="list_all_containers|Выводит список всех контейнеров"
-    ["-li,list-images"]="list_images|Выводит список всех образов"
-)
-
-declare -A COMMANDS_MANAGE=(
-    ["-ri"]="remove_image|Удаляет образ по <версии>"
-    ["-gph,generate-password-hash"]="generate_password_hash|Генерирует хэш пароля"
-    ["-d,down"]="stop_all_containers|Останавливает все запущенные контейнеры, фильтр по <имени>"
-    ["update"]="update_script|Выполняет обновление qq до актуальной версии"
-    ["-id,install-docker"]="install_docker|Выполняет полную установку докера"
-    ["-im,install-make"]="install_make|Выполняет установку утилиты make"
-    ["-gl,gitlab"]="open_gitlab|Открывает страницу gitlab.efko.ru"
-    ["-pb,prune-builder"]="prune_builder|Удаляет неиспользуемые объекты сборки"
-    ["up"]="start_filtered_containers|Запускает контейнеры по фильтру <имя>"
-    ["-dni"]="cleanup_docker_images|Удаляет <none> images"
-)
+source $HOME/qq/commands.sh
 
 #COMMANDS_HELP
 function print_help {
@@ -248,7 +226,7 @@ function stop_filtered_containers {
     done
 }
 
-cleanup_docker_images() {
+function cleanup_docker_images {
     docker images -f "dangling=true" -q | xargs -r docker rmi
     print_colored green "Все images <none> очищены!"
 }
@@ -324,6 +302,9 @@ function install_docker {
     fi
 
     # Шаг 4: Создание группы docker
+    sudo groupdel docker
+    sudo systemctl disable --now docker.service docker.socket
+    sudo rm /var/run/docker.sock
     sudo groupadd docker
     if [ $? -ne 0 ]; then
         print_colored yellow "Группа docker уже существует или возникла ошибка при создании группы."
@@ -365,6 +346,17 @@ function install_docker {
     print_colored yellow "Если вы запускали команды Docker CLI с помощью sudo до добавления пользователя в группу docker, выполните следующие команды для решения проблемы с правами доступа:"
     echo 'sudo chown "$USER":"$USER" /home/"$USER"/.docker -R'
     echo 'sudo chmod g+rwx "$HOME/.docker" -R'
+}
+
+function delete_docker {
+  sudo apt-get purge docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-ce-rootless-extras
+  sudo groupdel docker
+  sudo systemctl stop docker
+  sudo systemctl stop containerd
+  sudo systemctl disable --now docker.service docker.socket
+  sudo rm /var/run/docker.sock
+
+  print_colored green "Docker успешно удален."
 }
 
 function install_make {

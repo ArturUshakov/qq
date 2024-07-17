@@ -32,7 +32,7 @@ mkdir -p "$INSTALL_DIR"
 print_colored blue "Загрузка необходимых файлов из GitHub..."
 
 # Список файлов для загрузки
-files=("qq.sh" "qq_completions.sh" "CHANGELOG.md")
+files=("qq.sh" "qq_completions.sh" "CHANGELOG.md" "commands.sh")
 
 for file in "${files[@]}"; do
     curl -s "$REPO_URL/$file" -o "$INSTALL_DIR/$file"
