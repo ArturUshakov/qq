@@ -9,6 +9,9 @@ on:
     paths:
       - CHANGELOG.md
 
+permissions:
+  contents: write
+
 jobs:
   create_release:
     runs-on: ubuntu-latest
@@ -17,25 +20,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
       - name: Extract version from CHANGELOG.md
         id: extract_version
         run: |
           version=$(grep -oP '## \[\K[^\]]+' CHANGELOG.md | head -1)
-          echo "::set-output name=version::${version}"
+          echo "version=$version" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
-          tag_name: ${{ steps.extract_version.outputs.version }}
-          release_name: Release ${{ steps.extract_version.outputs.version }}
+          tag_name: ${{ env.version }}
+          release_name: Release ${{ env.version }}
           body: |
             See the changelog for more details:
             https://github.com/${{ github.repository }}/blob/master/CHANGELOG.md
@@ -45,7 +43,9 @@ jobs:
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./path/to/your/asset
+          asset_name: your_asset_name
           asset_content_type: application/octet-stream
