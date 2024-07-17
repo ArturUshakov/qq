@@ -5,15 +5,24 @@ source $HOME/qq/commands.sh
 function get_commands {
     local commands=""
     for cmd in "${!COMMANDS_HELP[@]}"; do
-        commands="$commands $cmd"
+        IFS=',' read -r -a array <<< "$cmd"
+        for element in "${array[@]}"; do
+            commands="${commands} ${element}"
+        done
     done
     for cmd in "${!COMMANDS_LIST[@]}"; do
-        commands="$commands $cmd"
+        IFS=',' read -r -a array <<< "$cmd"
+        for element in "${array[@]}"; do
+            commands="${commands} ${element}"
+        done
     done
     for cmd in "${!COMMANDS_MANAGE[@]}"; do
-        commands="$commands $cmd"
+        IFS=',' read -r -a array <<< "$cmd"
+        for element in "${array[@]}"; do
+            commands="${commands} ${element}"
+        done
     done
-    echo $commands
+    echo ${commands}
 }
 
 _qq_completions() {
@@ -32,10 +41,15 @@ _qq_completions() {
             return 0
             ;;
         down|-d)
-          local containers=$(docker ps --format '{{.Names}}')
-          COMPREPLY=( $(compgen -W "${containers}" -- ${cur}) )
-          return 0
-          ;;
+            local containers=$(docker ps --format '{{.Names}}')
+            COMPREPLY=( $(compgen -W "${containers}" -- ${cur}) )
+            return 0
+            ;;
+        up)
+            local containers=$(docker ps -a --format '{{.Names}}')
+            COMPREPLY=( $(compgen -W "${containers}" -- ${cur}) )
+            return 0
+            ;;
         *)
             if [[ ${cur} == -* ]]; then
                 COMPREPLY=( $(compgen -W "${commands}" -- ${cur}) )
