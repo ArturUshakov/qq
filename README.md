@@ -4,7 +4,9 @@
 
 ## Обзор
 
-`qq.sh` - это скрипт, предназначенный для упрощения управления Docker-контейнерами. Он предоставляет набор команд, которые помогают пользователям запускать, останавливать и управлять контейнерами Docker. Скрипт также включает функции автодополнения для улучшения пользовательского опыта.
+`qq.sh` - это скрипт, предназначенный для упрощения управления Docker-контейнерами. Он предоставляет набор команд,
+которые помогают пользователям запускать, останавливать и управлять контейнерами Docker. Скрипт также включает функции
+автодополнения для улучшения пользовательского опыта.
 
 ## Особенности
 
@@ -21,7 +23,9 @@
 ```bash
 curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/install.sh | bash
 ```
+
 или после скачивания файла `install.sh`
+
 ```bash
 bash install.sh
 ```
@@ -56,7 +60,9 @@ qq -h
 
 ## Overview
 
-`qq.sh` is a script designed for managing Docker containers with ease. It provides a set of commands to help users start, stop, and manage their Docker containers efficiently. The script also includes auto-completion features to enhance the user experience.
+`qq.sh` is a script designed for managing Docker containers with ease. It provides a set of commands to help users
+start, stop, and manage their Docker containers efficiently. The script also includes auto-completion features to
+enhance the user experience.
 
 ## Features
 
