@@ -255,7 +255,7 @@ function update_script {
     print_colored blue "Обновление скрипта qq..."
 
     # Список файлов для обновления
-    local files=("qq.sh" "qq_completions.sh" "CHANGELOG.md")
+    local files=("qq.sh" "qq_completions.sh" "CHANGELOG.md" "commands.sh")
 
     for file in "${files[@]}"; do
         curl -s "$REPO_URL/$file" -o "$INSTALL_DIR/$file"
