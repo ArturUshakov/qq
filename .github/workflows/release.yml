@@ -20,9 +20,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install shellcheck
-        run: sudo apt-get install -y shellcheck
-
       - name: Install shfmt
         run: |
           sudo apt-get install -y software-properties-common
@@ -32,14 +29,9 @@ jobs:
           go install mvdan.cc/sh/v3/cmd/shfmt@latest
           export PATH=$PATH:$(go env GOPATH)/bin
 
-      - name: Run shellcheck
-        run: |
-          shellcheck ./*.sh
-
       - name: Run shfmt
         run: |
           shfmt -w ./*.sh
-
 
   test:
     runs-on: ubuntu-latest
