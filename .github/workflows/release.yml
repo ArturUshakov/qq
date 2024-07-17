@@ -13,8 +13,56 @@ permissions:
   contents: write
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Install shfmt
+        run: |
+          sudo apt-get install -y software-properties-common
+          sudo add-apt-repository ppa:longsleep/golang-backports -y
+          sudo apt-get update
+          sudo apt-get install -y golang-go
+          go install mvdan.cc/sh/v3/cmd/shfmt@latest
+          export PATH=$PATH:$(go env GOPATH)/bin
+
+      - name: Run shellcheck
+        run: |
+          shellcheck ./path/to/your/scripts/*.sh
+
+      - name: Run shfmt
+        run: |
+          shfmt -w ./path/to/your/scripts/*.sh
+
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
   create_release:
     runs-on: ubuntu-latest
+    needs: test
 
     steps:
       - name: Checkout code

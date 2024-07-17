@@ -4,26 +4,26 @@ INSTALL_DIR="$HOME/qq"
 REPO_URL="https://raw.githubusercontent.com/ArturUshakov/qq/master"
 
 function print_colored {
-    local color_code
-    case "$1" in
-        red)
-            color_code="31"
-            ;;
-        green)
-            color_code="32"
-            ;;
-        yellow)
-            color_code="33"
-            ;;
-        blue)
-            color_code="34"
-            ;;
-        *)
-            color_code="0" # default color
-            ;;
-    esac
-    shift
-    echo -e "\e[${color_code}m$*\e[0m"
+  local color_code
+  case "$1" in
+  red)
+    color_code="31"
+    ;;
+  green)
+    color_code="32"
+    ;;
+  yellow)
+    color_code="33"
+    ;;
+  blue)
+    color_code="34"
+    ;;
+  *)
+    color_code="0" # default color
+    ;;
+  esac
+  shift
+  echo -e "\e[${color_code}m$*\e[0m"
 }
 
 # Создаем директорию для установки, если она не существует
@@ -35,13 +35,13 @@ print_colored blue "Загрузка необходимых файлов из Gi
 files=("qq.sh" "qq_completions.sh" "CHANGELOG.md" "commands.sh")
 
 for file in "${files[@]}"; do
-    curl -s "$REPO_URL/$file" -o "$INSTALL_DIR/$file"
-    if [ $? -eq 0 ]; then
-        print_colored green "$file загружен успешно."
-        chmod +rx "$INSTALL_DIR/$file"
-    else
-        print_colored red "Ошибка загрузки $file."
-    fi
+  curl -s "$REPO_URL/$file" -o "$INSTALL_DIR/$file"
+  if [ $? -eq 0 ]; then
+    print_colored green "$file загружен успешно."
+    chmod +rx "$INSTALL_DIR/$file"
+  else
+    print_colored red "Ошибка загрузки $file."
+  fi
 done
 
 # Определяем абсолютный путь к скрипту
@@ -50,25 +50,25 @@ COMPLETION_SCRIPT="$INSTALL_DIR/qq_completions.sh"
 
 # Функция для добавления alias
 add_alias() {
-    ALIAS_FILE="$1"
-    ALIAS_CMD="alias qq='$QQ_SCRIPT'"
+  ALIAS_FILE="$1"
+  ALIAS_CMD="alias qq='$QQ_SCRIPT'"
 
-    if grep -q "alias qq=" "$ALIAS_FILE"; then
-        sed -i "/alias qq=/c\\$ALIAS_CMD" "$ALIAS_FILE"
-    else
-        echo "$ALIAS_CMD" >> "$ALIAS_FILE"
-    fi
+  if grep -q "alias qq=" "$ALIAS_FILE"; then
+    sed -i "/alias qq=/c\\$ALIAS_CMD" "$ALIAS_FILE"
+  else
+    echo "$ALIAS_CMD" >>"$ALIAS_FILE"
+  fi
 }
 
 # Функция для добавления автодополнения
 add_completion() {
-    COMPLETION_CMD="source $COMPLETION_SCRIPT"
+  COMPLETION_CMD="source $COMPLETION_SCRIPT"
 
-    if grep -q "$COMPLETION_CMD" "$1"; then
-        echo "Автодополнение уже добавлено в $1"
-    else
-        echo "$COMPLETION_CMD" >> "$1"
-    fi
+  if grep -q "$COMPLETION_CMD" "$1"; then
+    echo "Автодополнение уже добавлено в $1"
+  else
+    echo "$COMPLETION_CMD" >>"$1"
+  fi
 }
 
 # Основной процесс установки
@@ -76,20 +76,20 @@ print_colored blue "Хотите установить автодополнени
 read -r response
 
 if [[ "$response" =~ ^(yes|y|Y|YES|Yes|)$ ]]; then
-    # Настройка alias и автодополнения
-    if [ -f "$HOME/.bash_aliases" ]; then
-        add_alias "$HOME/.bash_aliases"
-        add_completion "$HOME/.bash_aliases"
-    else
-        add_alias "$HOME/.bashrc"
-        add_completion "$HOME/.bashrc"
-    fi
+  # Настройка alias и автодополнения
+  if [ -f "$HOME/.bash_aliases" ]; then
+    add_alias "$HOME/.bash_aliases"
+    add_completion "$HOME/.bash_aliases"
+  else
+    add_alias "$HOME/.bashrc"
+    add_completion "$HOME/.bashrc"
+  fi
 
-    # Перезагрузка настроек
-    source "$HOME/.bashrc"
-    [ -f "$HOME/.bash_aliases" ] && source "$HOME/.bash_aliases"
+  # Перезагрузка настроек
+  source "$HOME/.bashrc"
+  [ -f "$HOME/.bash_aliases" ] && source "$HOME/.bash_aliases"
 
-    print_colored green "Установка завершена. Alias и автодополнения настроены."
+  print_colored green "Установка завершена. Alias и автодополнения настроены."
 else
-    print_colored red "Установка отменена."
+  print_colored red "Установка отменена."
 fi
