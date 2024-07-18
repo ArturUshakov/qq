@@ -19,8 +19,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup GitHub CLI
-        uses: actions/setup-gh@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install GitHub CLI
+        run: |
+          npm install -g @githubnext/github-copilot-cli
 
       - name: Extract version from CHANGELOG.md
         id: extract_version
