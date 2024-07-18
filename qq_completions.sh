@@ -25,6 +25,18 @@ function get_commands {
   echo ${commands}
 }
 
+_open_folder_completions() {
+  local cur prev opts
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  prev="${COMP_WORDS[COMP_CWORD - 1]}"
+
+  if [[ ${prev} == "open-folder" || ${prev} == "-of" ]]; then
+    local folders=$(find ~ -mindepth 1 -maxdepth 3 -type d -path "*/${cur}*" -exec basename {} \;)
+    COMPREPLY=($(compgen -W "${folders}" -- ${cur}))
+  fi
+}
+
 _qq_completions() {
   local cur prev opts commands
   COMPREPLY=()
@@ -48,6 +60,10 @@ _qq_completions() {
   up)
     local containers=$(docker ps -a --format '{{.Names}}')
     COMPREPLY=($(compgen -W "${containers}" -- ${cur}))
+    return 0
+    ;;
+  open-folder | -of)
+    _open_folder_completions
     return 0
     ;;
   *)

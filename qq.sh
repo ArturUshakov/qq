@@ -102,6 +102,11 @@ function check_for_updates {
   fi
 }
 
+function get_external_ip() {
+    ifconfig | awk '/inet / && $2 !~ /^127/ {ip=$2} END {print ip}'
+}
+
+
 #COMMANDS_LIST
 function start_filtered_containers {
   if [ -z "$1" ]; then
@@ -124,6 +129,19 @@ function start_filtered_containers {
     docker start "$container_id" >/dev/null
     printf "%s%s\n" "$(print_colored green "$container_name ")" "$(print_colored red "Запущен")"
   done
+}
+
+function chmod_all {
+  sudo chmod 777 -R .
+}
+
+function open_folder_by_name() {
+    folder_path=$(find ~ -mindepth 1 -maxdepth 3 -type d -name "$1" 2>/dev/null | head -n 1)
+    if [ -z "$folder_path" ]; then
+        print_colored red "Папка не найдена."
+    else
+        xdg-open "$folder_path"
+    fi
 }
 
 function list_running_containers {
@@ -203,7 +221,7 @@ function generate_password_hash {
   local hash
 
   password="$1"
-  hash=$(php -r "echo password_hash('$password', PASSWORD_DEFAULT);")
+  hash=$(htpasswd -bnBC 10 "" "$password" | tr -d ':\n')
 
   echo "Сгенерированный хеш: $hash"
 }
