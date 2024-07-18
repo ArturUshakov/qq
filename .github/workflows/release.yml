@@ -19,10 +19,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
+      - name: Setup GitHub CLI
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
 
       - name: Install GitHub CLI
         run: |
@@ -51,7 +51,7 @@ jobs:
           if [[ -z "$next_tag_line" || "$next_tag_line" -le "$tag_line" ]]; then
             next_tag_line=$(wc -l < CHANGELOG.md)
           fi
-          release_notes=$(sed -n "${tag_line},${next_tag_line}p" CHANGELOG.md | sed '$d')
+          release_notes=$(sed -n "$tag_line,${next_tag_line}p" CHANGELOG.md | sed '$d')
           echo "release_notes<<EOF" >> $GITHUB_ENV
           echo "$release_notes" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
