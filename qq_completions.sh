@@ -22,59 +22,58 @@ function get_commands {
       commands="${commands} ${element}"
     done
   done
-  echo ${commands}
+  printf "%s\n" "${commands}"
 }
 
 _open_folder_completions() {
-  local cur prev opts
+  local cur prev folders
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD - 1]}"
-
   if [[ ${prev} == "open-folder" || ${prev} == "-of" ]]; then
-    local folders=$(find ~ -mindepth 1 -maxdepth 3 -type d -path "*/${cur}*" -exec basename {} \;)
-    COMPREPLY=($(compgen -W "${folders}" -- ${cur}))
+    folders=$(find ~ -mindepth 1 -maxdepth 3 -type d -path "*/${cur}*" -exec basename {} \;)
+    COMPREPLY=($(compgen -W "${folders}" -- "${cur}"))
   fi
 }
 
 _qq_completions() {
-  local cur prev opts commands
+  local cur prev commands containers
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD - 1]}"
   commands=$(get_commands)
 
   case "${prev}" in
-  -ri)
-    COMPREPLY=($(compgen -W "$(docker images --format '{{.Tag}}')" -- ${cur}))
-    return 0
-    ;;
-  -gph)
-    return 0
-    ;;
-  down | -d)
-    local containers=$(docker ps --format '{{.Names}}')
-    COMPREPLY=($(compgen -W "${containers}" -- ${cur}))
-    return 0
-    ;;
-  up)
-    local containers=$(docker ps -a --format '{{.Names}}')
-    COMPREPLY=($(compgen -W "${containers}" -- ${cur}))
-    return 0
-    ;;
-  open-folder | -of)
-    _open_folder_completions
-    return 0
-    ;;
-  *)
-    if [[ ${cur} == -* ]]; then
-      COMPREPLY=($(compgen -W "${commands}" -- ${cur}))
-    else
-      local containers=$(docker ps --format '{{.Names}}')
-      COMPREPLY=($(compgen -W "${commands} ${containers}" -- ${cur}))
-    fi
-    return 0
-    ;;
+    -ri)
+      COMPREPLY=($(compgen -W "$(docker images --format '{{.Tag}}')" -- "${cur}"))
+      return 0
+      ;;
+    -gph)
+      return 0
+      ;;
+    down | -d)
+      containers=$(docker ps --format '{{.Names}}')
+      COMPREPLY=($(compgen -W "${containers}" -- "${cur}"))
+      return 0
+      ;;
+    up)
+      containers=$(docker ps -a --format '{{.Names}}')
+      COMPREPLY=($(compgen -W "${containers}" -- "${cur}"))
+      return 0
+      ;;
+    open-folder | -of)
+      _open_folder_completions
+      return 0
+      ;;
+    *)
+      if [[ ${cur} == -* ]]; then
+        COMPREPLY=($(compgen -W "${commands}" -- "${cur}"))
+      else
+        containers=$(docker ps --format '{{.Names}}')
+        COMPREPLY=($(compgen -W "${commands} ${containers}" -- "${cur}"))
+      fi
+      return 0
+      ;;
   esac
 }
 

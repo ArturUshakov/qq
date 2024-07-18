@@ -3,6 +3,7 @@
 declare -A COMMANDS_HELP=(
   ["-h,help,qq"]="print_help|Выводит это сообщение"
   ["-i,info"]="script_info|Выводит информацию о скрипте"
+  ["re-intall"]="re_install|Заново устанавливает QQ"
 )
 
 declare -A COMMANDS_LIST=(
