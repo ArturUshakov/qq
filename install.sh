@@ -65,7 +65,7 @@ add_completion() {
   COMPLETION_CMD="source $COMPLETION_SCRIPT"
 
   if grep -q "$COMPLETION_CMD" "$1"; then
-    echo "Автодополнение уже добавлено в $1"
+    echo ""
   else
     echo "$COMPLETION_CMD" >>"$1"
   fi
