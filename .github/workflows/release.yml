@@ -24,10 +24,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install GitHub CLI
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gh
+      - name: Setup GitHub CLI
+        uses: actions/gh-cli@v1
+        with:
+          version: latest
 
       - name: Extract version from CHANGELOG.md
         id: extract_version
@@ -48,7 +48,7 @@ jobs:
         id: extract_notes
         run: |
           tag_line=$(grep -n "## \[${{ env.version }}\]" CHANGELOG.md | cut -d: -f1)
-          next_tag_line=$(grep -n "## \[" CHANGELOG.md | grep -A 1 "^$tag_line:" | tail -n 1 | cut -d: -f1)
+          next_tag_line=$(grep -n -A 1 "## \[" CHANGELOG.md | grep -A 1 "^$tag_line:" | tail -n 1 | cut -d: -f1)
           if [[ -z "$next_tag_line" || "$next_tag_line" -le "$tag_line" ]]; then
             next_tag_line=$(wc -l < CHANGELOG.md)
           fi
