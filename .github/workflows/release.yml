@@ -19,14 +19,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup GitHub CLI
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install GitHub CLI
         run: |
-          npm install -g @githubnext/github-copilot-cli
+          sudo apt-get update
+          sudo apt-get install -y gh
 
       - name: Extract version from CHANGELOG.md
         id: extract_version
@@ -47,11 +48,11 @@ jobs:
         id: extract_notes
         run: |
           tag_line=$(grep -n "## \[${{ env.version }}\]" CHANGELOG.md | cut -d: -f1)
-          next_tag_line=$(grep -n -A 1 "## \[" CHANGELOG.md | grep -A 1 "^$tag_line:" | tail -n 1 | cut -d: -f1)
+          next_tag_line=$(grep -n "## \[" CHANGELOG.md | grep -A 1 "^$tag_line:" | tail -n 1 | cut -d: -f1)
           if [[ -z "$next_tag_line" || "$next_tag_line" -le "$tag_line" ]]; then
             next_tag_line=$(wc -l < CHANGELOG.md)
           fi
-          release_notes=$(sed -n "$tag_line,${next_tag_line}p" CHANGELOG.md | sed '$d')
+          release_notes=$(sed -n "${tag_line},${next_tag_line}p" CHANGELOG.md | sed '$d')
           echo "release_notes<<EOF" >> $GITHUB_ENV
           echo "$release_notes" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
