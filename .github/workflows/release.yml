@@ -19,8 +19,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install GitHub CLI
-        run: sudo apt-get install -y gh
+      - name: Setup GitHub CLI
+        uses: actions/setup-gh@v2
 
       - name: Extract version from CHANGELOG.md
         id: extract_version
@@ -29,22 +29,15 @@ jobs:
           echo "version=$version" >> $GITHUB_ENV
           echo "Extracted version: $version"
 
-      - name: Check if tag exists
-        id: check_tag
+      - name: Check and stop if tag exists
+        id: check_and_stop
         run: |
           if git rev-parse "refs/tags/${{ env.version }}" >/dev/null 2>&1; then
-            echo "Tag already exists."
-            echo "tag_exists=true" >> $GITHUB_ENV
-          else
-            echo "tag_exists=false" >> $GITHUB_ENV
+            echo "Tag already exists, skipping release creation."
+            exit 0
           fi
 
-      - name: Stop if tag exists
-        if: env.tag_exists == 'true'
-        run: echo "Tag already exists, skipping release creation."
-
       - name: Extract release notes from CHANGELOG.md
-        if: env.tag_exists == 'false'
         id: extract_notes
         run: |
           tag_line=$(grep -n "## \[${{ env.version }}\]" CHANGELOG.md | cut -d: -f1)
@@ -58,12 +51,9 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - name: Debug release notes
-        if: env.tag_exists == 'false'
-        run: |
-          echo "Release notes: ${{ env.release_notes }}"
+        run: echo "Release notes: ${{ env.release_notes }}"
 
-      - name: Create GitHub Release using gh CLI
-        if: env.tag_exists == 'false'
+      - name: Create GitHub Release
         run: |
           gh auth login --with-token <<< "${{ secrets.RELEASE_TOKEN }}"
           gh release create "${{ env.version }}" \

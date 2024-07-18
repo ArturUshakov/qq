@@ -2,88 +2,27 @@
 
 source $HOME/qq/commands.sh
 
-#COMMANDS_HELP
-function print_help {
-  for group in $(compgen -A variable); do
-    if declare -p "$group" 2>/dev/null | grep -q 'declare -A'; then
-      declare -n cmd_group="$group"
-      case $group in
-        "COMMANDS_HELP") print_colored blue "\nСправка:" ;;
-        "COMMANDS_LIST") print_colored blue "\nСписки:" ;;
-        "COMMANDS_MANAGE") print_colored blue "\nУправление:" ;;
-        "COMMANDS_UPDATE") print_colored blue "\nОбновление и установка:" ;;
-        "COMMANDS_MISC") print_colored blue "\nФайловая система и GitLab:" ;;
-        "COMMANDS_INSTALL") print_colored blue "\nУстановка и удаление Docker и утилит:" ;;
-      esac
-
-      for key in "${!cmd_group[@]}"; do
-        IFS='|' read -r func desc <<<"${cmd_group[$key]}"
-        printf "    $(print_colored green "%-30s") $(print_colored yellow "%s")\n" "$key" "$desc"
-      done
-    fi
-  done
-}
-
+# Вспомогательные функции
 function print_colored {
+  local reset="\033[0m"
   local color=$1
   local text=$2
-  case $color in
-    red) echo -e "\033[31m$text\033[0m" ;;
-    green) echo -e "\033[32m$text\033[0m" ;;
-    yellow) echo -e "\033[33m$text\033[0m" ;;
-    blue) echo -e "\033[34m$text\033[0m" ;;
-    cyan) echo -e "\033[36m$text\033[0m" ;;
-    *) echo "$text" ;;
-  esac
+  declare -A colors=(
+    [red]="\033[31m"
+    [green]="\033[32m"
+    [yellow]="\033[33m"
+    [blue]="\033[34m"
+    [cyan]="\033[36m"
+  )
+  echo -e "${colors[$color]:-}$text$reset"
 }
 
 function get_version {
-  grep -m 1 -oP '(?<=## \[)\d+\.\d+\.\d+(?=\])' "$HOME/qq/CHANGELOG.md"
-}
-
-function script_info {
-  print_colored blue "QQ Script Information"
-  printf "Repository: %s\n" "$(print_colored green "https://github.com/ArturUshakov/qq")"
-  printf "Creator: %s\n" "$(print_colored green "https://t.me/Mariores")"
-  printf "Version: %s\n" "$(print_colored yellow "$(get_version)")"
-  printf "\n"
-  get_latest_tag_info
+  grep -m 1 -Po '(?<=## \[)\d+\.\d+\.\d+(?=\])' "$HOME/qq/CHANGELOG.md"
 }
 
 function get_latest_version {
-  curl -s "https://raw.githubusercontent.com/ArturUshakov/qq/master/CHANGELOG.md" | grep -m 1 -oP '(?<=## \[)\d+\.\d+\.\d+(?=\])'
-}
-
-function get_latest_tag_info {
-  local changelog_file="$HOME/qq/CHANGELOG.md"
-  if [[ ! -f "$changelog_file" ]]; then
-    print_colored red "Файл CHANGELOG.md не найден."
-    return
-  fi
-
-  local latest_tag_line
-  latest_tag_line=$(grep -m 1 -oP '^## \[\d+\.\d+\.\d+\] - \d{4}-\d{2}-\d{2}' "$changelog_file")
-  if [[ -z "$latest_tag_line" ]]; then
-    print_colored red "Тэги не найдены в файле CHANGELOG.md."
-    return
-  fi
-
-  local latest_tag_index
-  latest_tag_index=$(grep -n -m 1 -oP '^## \[\d+\.\d+\.\d+\] - \d{4}-\d{2}-\d{2}' "$changelog_file" | cut -d: -f1)
-
-  local output
-  output=$(sed -n "${latest_tag_index},/^## \[/p" "$changelog_file" | sed '$d')
-  while IFS= read -r line; do
-    if [[ $line =~ ^##\ \[([0-9]+\.[0-9]+\.[0-9]+)\]\ -\ ([0-9]{4}-[0-9]{2}-[0-9]{2})$ ]]; then
-      printf "$(print_colored green "## [${BASH_REMATCH[1]}]") - $(print_colored yellow "${BASH_REMATCH[2]}")\n"
-    elif [[ $line =~ ^-\ (.*) ]]; then
-      printf "$(print_colored cyan "- ${BASH_REMATCH[1]}")\n"
-    elif [[ $line =~ ^\ \ -\ (.*) ]]; then
-      printf "  $(print_colored blue "- ${BASH_REMATCH[1]}")\n"
-    else
-      printf "%s\n" "$line"
-    fi
-  done <<< "$output"
+  curl -s "https://raw.githubusercontent.com/ArturUshakov/qq/master/CHANGELOG.md" | grep -m 1 -Po '(?<=## \[)\d+\.\d+\.\d+(?=\])'
 }
 
 function check_for_updates {
@@ -92,19 +31,151 @@ function check_for_updates {
   local latest_version
   latest_version=$(get_latest_version)
 
-  if [[ "$(printf '%s\n' "$latest_version" "$installed_version" | sort -V | head -n1)" != "$latest_version" ]]; then
-    print_colored red "\nВнимание!"
-    print_colored yellow "Доступна новая версия qq: $latest_version. Ваша версия: $installed_version."
-    print_colored yellow "Используйте 'qq update' для обновления до последней версии."
+  [[ "$(printf '%s\n' "$latest_version" "$installed_version" | sort -V | head -n1)" == "$latest_version" ]] && return
+
+  print_colored red "\nВнимание!"
+  print_colored yellow "Доступна новая версия qq: $latest_version. Ваша версия: $installed_version."
+  print_colored yellow "Используйте 'qq update' для обновления до последней версии."
+}
+
+function process_tag_line {
+  local line="$1"
+  if [[ $line =~ ^##\ \[([0-9]+\.[0-9]+\.[0-9]+)\]\ -\ ([0-9]{4}-[0-9]{2}-[0-9]{2})$ ]]; then
+    printf "$(print_colored green "## [${BASH_REMATCH[1]}]") - $(print_colored yellow "${BASH_REMATCH[2]}")\n"
+  elif [[ $line =~ ^-\ (.*) ]]; then
+    printf "$(print_colored cyan "- ${BASH_REMATCH[1]}")\n"
+  elif [[ $line =~ ^\ \ -\ (.*) ]]; then
+    printf "  $(print_colored blue "- ${BASH_REMATCH[1]}")\n"
+  else
+    printf "%s\n" "$line"
   fi
 }
 
-function get_external_ip() {
-    ifconfig | awk '/inet / && $2 !~ /^127/ {ip=$2} END {print ip}'
+function get_latest_tag_info {
+  local changelog_file="$HOME/qq/CHANGELOG.md"
+  [[ ! -f "$changelog_file" ]] && { print_colored red "Файл CHANGELOG.md не найден."; return; }
+
+  local latest_tag_line
+  latest_tag_line=$(grep -m 1 -oP '^## \[\d+\.\d+\.\d+\] - \d{4}-\d{2}-\d{2}' "$changelog_file")
+  [[ -z "$latest_tag_line" ]] && { print_colored red "Тэги не найдены в файле CHANGELOG.md."; return; }
+
+  local latest_tag_index
+  latest_tag_index=$(grep -n -m 1 -oP '^## \[\d+\.\d+\.\d+\] - \d{4}-\d{2}-\d{2}' "$changelog_file" | cut -d: -f1)
+
+  local output
+  output=$(sed -n "${latest_tag_index},/^## \[/p" "$changelog_file" | sed '$d')
+  while IFS= read -r line; do
+    process_tag_line "$line"
+  done <<< "$output"
 }
 
+# Команды справки
+function print_help {
+  for group in $(compgen -A variable); do
+    declare -p "$group" 2>/dev/null | grep -q 'declare -A' || continue
+    declare -n cmd_group="$group"
+    case $group in
+      "COMMANDS_HELP") print_colored blue "\nСправка:" ;;
+      "COMMANDS_LIST") print_colored blue "\nСписки:" ;;
+      "COMMANDS_MANAGE") print_colored blue "\nУправление:" ;;
+      "COMMANDS_UPDATE") print_colored blue "\nОбновление и установка:" ;;
+      "COMMANDS_MISC") print_colored blue "\nФайловая система и GitLab:" ;;
+      "COMMANDS_INSTALL") print_colored blue "\nУстановка и удаление Docker и утилит:" ;;
+    esac
 
-#COMMANDS_LIST
+    for key in "${!cmd_group[@]}"; do
+      IFS='|' read -r func desc <<<"${cmd_group[$key]}"
+      printf "    $(print_colored green "%-30s") $(print_colored yellow "%s")\n" "$key" "$desc"
+    done
+  done
+}
+
+# Команды информации
+function script_info {
+  local version
+  version=$(get_version)
+
+  print_colored blue "==================== QQ Script Information ===================="
+  printf "Repository: %s\n" "$(print_colored green "https://github.com/ArturUshakov/qq")"
+  printf "Creator: %s\n" "$(print_colored green "https://t.me/Mariores")"
+  printf "Version: %s\n" "$(print_colored yellow "$version")"
+  print_colored red "Latest Changes:\n"
+  get_latest_tag_info
+  print_colored blue "===============================================================\n"
+}
+
+function get_external_ip {
+  ifconfig | awk '/inet / && $2 !~ /^127/ {ip=$2} END {print ip}'
+}
+
+# Команды управления контейнерами
+function stop_project_containers {
+  local partial_name="$1"
+  if [[ -z "$partial_name" ]]; then
+    print_colored red "Пожалуйста, укажите часть имени проекта для остановки контейнеров."
+    return
+  fi
+
+  local projects
+  projects=$(docker compose ls --format json | jq -r --arg partial_name "$partial_name" '.[] | select(.Name | contains($partial_name)) | .Name')
+
+  if [[ -z "$projects" ]]; then
+    print_colored red "Проекты, содержащие '$partial_name', не найдены."
+    return
+  fi
+
+  for project in $projects; do
+    print_colored blue "Остановка контейнеров для проекта '$project'..."
+    if ! docker compose -p "$project" down; then
+      print_colored red "Ошибка остановки контейнеров для проекта '$project'."
+    else
+      print_colored green "Контейнеры для проекта '$project' успешно остановлены."
+    fi
+  done
+}
+
+function start_project_containers {
+  local partial_name="$1"
+  if [[ -z "$partial_name" ]]; then
+    print_colored red "Пожалуйста, укажите часть имени проекта для запуска контейнеров."
+    return
+  fi
+
+  local projects
+  projects=$(docker compose ls --format json | jq -r --arg partial_name "$partial_name" '.[] | select(.Name | contains($partial_name)) | .Name')
+
+  if [[ -z "$projects" ]]; then
+    print_colored red "Проекты, содержащие '$partial_name', не найдены. Ищем в папке projects..."
+    local project_dir
+    project_dir=$(find ~/projects -maxdepth 1 -type d -name "*$partial_name*" -print -quit)
+
+    if [[ -z "$project_dir" ]]; then
+      print_colored red "Папка проекта, содержащая '$partial_name', не найдена."
+      return
+    fi
+
+    print_colored blue "Папка проекта найдена: $project_dir. Выполнение 'make up'..."
+    (cd "$project_dir" && make up)
+
+    if [[ $? -ne 0 ]]; then
+      print_colored red "Ошибка выполнения 'make up' в папке '$project_dir'."
+    else
+      print_colored green "'make up' выполнено успешно в папке '$project_dir'."
+    fi
+
+    return
+  fi
+
+  for project in $projects; do
+    print_colored blue "Запуск контейнеров для проекта '$project'..."
+    if ! docker compose -p "$project" up -d; then
+      print_colored red "Ошибка запуска контейнеров для проекта '$project'."
+    else
+      print_colored green "Контейнеры для проекта '$project' успешно запущены."
+    fi
+  done
+}
+
 function start_filtered_containers {
   local filter="$1"
   if [[ -z "$filter" ]]; then
@@ -129,33 +200,50 @@ function start_filtered_containers {
   done
 }
 
-function chmod_all {
-  sudo chmod 777 -R .
+
+function stop_all_containers {
+  local container_ids
+  IFS=$'\n' read -d '' -r -a container_ids < <(docker ps -q && printf '\0')
+
+  if [[ ${#container_ids[@]} -eq 0 ]]; then
+    print_colored red "Нет запущенных контейнеров для остановки."
+    return
+  fi
+
+  print_colored blue "Остановка всех запущенных контейнеров:"
+  for container_id in "${container_ids[@]}"; do
+    local container_name
+    container_name=$(docker ps --filter "id=$container_id" --format "{{.Names}}")
+    docker stop "$container_id" >/dev/null
+    printf "%s %s\n" "$(print_colored green "$container_name")" "$(print_colored red "Остановлен")"
+  done
 }
 
-function open_folder_by_name {
-  local folder_name="$1"
-  local folder_path
-  folder_path=$(find ~ -mindepth 1 -maxdepth 3 -type d -name "$folder_name" 2>/dev/null | head -n 1)
-  if [[ -z "$folder_path" ]]; then
-    print_colored red "Папка не найдена."
-  else
-    xdg-open "$folder_path"
-  fi
+function list_containers {
+  local filter="$1"
+  local title="$2"
+  local format="$3"
+
+  declare -A compose_projects
+
+  while IFS=$'\t' read -r name status project; do
+    compose_projects["$project"]+="${name}\t${status}\n"
+  done < <(docker ps $filter --format "$format")
+
+  for project in "${!compose_projects[@]}"; do
+    print_colored blue "\nПроект: $project"
+    while IFS=$'\t' read -r name status; do
+      printf "%-55s %s\n" "$(print_colored green "$name")" "$(print_colored red "$status")"
+    done <<< "${compose_projects["$project"]}"
+  done
 }
 
 function list_running_containers {
-  print_colored red "Запущенные контейнеры:"
-  docker ps --format "{{.Names}}\t{{.Status}}" | while IFS=$'\t' read -r name status; do
-    printf "%-55s %s\n" "$(print_colored green "$name")" "$(print_colored red "$status")"
-  done
+  list_containers "" "Запущенные контейнеры" "{{.Names}}\t{{.Status}}\t{{.Label \"com.docker.compose.project\"}}"
 }
 
 function list_all_containers {
-  print_colored red "Все контейнеры:"
-  docker ps -a --format "{{.Names}}\t{{.Status}}" | while IFS=$'\t' read -r name status; do
-    printf "%-55s %s\n" "$(print_colored green "$name")" "$(print_colored red "$status")"
-  done
+  list_containers "-a" "Все контейнеры" "{{.Names}}\t{{.Status}}\t{{.Label \"com.docker.compose.project\"}}"
 }
 
 function list_images {
@@ -196,6 +284,27 @@ function remove_image {
   done
 }
 
+function cleanup_docker_images {
+  docker images -f "dangling=true" -q | xargs -r docker rmi
+  print_colored green "Все images <none> очищены!"
+}
+
+# Утилиты
+function chmod_all {
+  sudo chmod 777 -R .
+}
+
+function open_folder_by_name {
+  local folder_name="$1"
+  local folder_path
+  folder_path=$(find ~ -mindepth 1 -maxdepth 3 -type d -name "$folder_name" 2>/dev/null | head -n 1)
+  if [[ -z "$folder_path" ]]; then
+    print_colored red "Папка не найдена."
+  else
+    xdg-open "$folder_path"
+  fi
+}
+
 function generate_password_hash {
   local password="$1"
   if [[ -z "$password" ]]; then
@@ -208,80 +317,7 @@ function generate_password_hash {
   printf "Сгенерированный хеш: %s\n" "$hash"
 }
 
-function stop_filtered_containers {
-  local filter="$1"
-  if [[ -z "$filter" ]]; then
-    print_colored red "Пожалуйста, укажите фильтр для остановки контейнеров"
-    return
-  fi
-
-  local container_ids
-  IFS=$'\n' read -d '' -r -a container_ids < <(docker ps --filter "name=$filter" -q && printf '\0')
-
-  if [[ ${#container_ids[@]} -eq 0 ]]; then
-    print_colored red "Контейнеры, соответствующие фильтру '$filter', не найдены"
-    return
-  fi
-
-  print_colored blue "Остановка контейнеров, соответствующих фильтру '$filter':"
-  for container_id in "${container_ids[@]}"; do
-    local container_name
-    container_name=$(docker ps --filter "id=$container_id" --format "{{.Names}}")
-    docker stop "$container_id" >/dev/null
-    printf "%s %s\n" "$(print_colored green "$container_name")" "$(print_colored red "Остановлен")"
-  done
-}
-
-function cleanup_docker_images {
-  docker images -f "dangling=true" -q | xargs -r docker rmi
-  print_colored green "Все images <none> очищены!"
-}
-
-function stop_all_containers {
-  local container_ids
-  IFS=$'\n' read -d '' -r -a container_ids < <(docker ps -q && printf '\0')
-
-  if [[ ${#container_ids[@]} -eq 0 ]]; then
-    print_colored red "Нет запущенных контейнеров для остановки."
-    return
-  fi
-
-  print_colored blue "Остановка всех запущенных контейнеров:"
-  for container_id in "${container_ids[@]}"; do
-    local container_name
-    container_name=$(docker ps --filter "id=$container_id" --format "{{.Names}}")
-    docker stop "$container_id" >/dev/null
-    printf "%s %s\n" "$(print_colored green "$container_name")" "$(print_colored red "Остановлен")"
-  done
-}
-
-function update_script {
-  INSTALL_DIR="$HOME/qq"
-  REPO_URL="https://raw.githubusercontent.com/ArturUshakov/qq/master"
-
-  mkdir -p "$INSTALL_DIR"
-
-  print_colored blue "Загрузка необходимых файлов из GitHub..."
-
-  # Список файлов для загрузки
-  files=("qq.sh" "qq_completions.sh" "CHANGELOG.md" "commands.sh")
-
-  for file in "${files[@]}"; do
-    curl -s "$REPO_URL/$file" -o "$INSTALL_DIR/$file"
-    if [ $? -eq 0 ]; then
-      print_colored green "$file загружен успешно."
-      chmod +rx "$INSTALL_DIR/$file"
-    else
-      print_colored red "Ошибка загрузки $file."
-    fi
-  done
-
-  print_colored green "Обновление завершено."
-
-  print_colored blue "Последние обновления:\n"
-  get_latest_tag_info
-}
-
+# Команды установки и удаления
 function install_docker {
   print_colored blue "Установка Docker..."
 
@@ -290,28 +326,24 @@ function install_docker {
     return
   fi
 
-  # Шаг 1: Загрузка установочного скрипта Docker
   curl -fsSL https://get.docker.com -o get-docker.sh
   if [ $? -ne 0 ]; then
     print_colored red "Ошибка загрузки установочного скрипта Docker."
     return
   fi
 
-  # Шаг 2: Запуск скрипта установки с предварительной проверкой
   sudo sh ./get-docker.sh --dry-run
   if [ $? -ne 0 ]; then
     print_colored red "Ошибка выполнения предварительной проверки установки Docker."
     return
   fi
 
-  # Шаг 3: Запуск скрипта установки Docker
   sudo sh ./get-docker.sh
   if [ $? -ne 0 ]; then
     print_colored red "Ошибка установки Docker."
     return
   fi
 
-  # Шаг 4: Создание группы docker
   sudo groupdel docker
   sudo systemctl disable --now docker.service docker.socket
   sudo rm /var/run/docker.sock
@@ -322,28 +354,24 @@ function install_docker {
     print_colored green "Группа docker создана успешно."
   fi
 
-  # Шаг 5: Добавление текущего пользователя в группу docker
   sudo usermod -aG docker $USER
   if [ $? -ne 0 ]; then
     print_colored red "Ошибка добавления пользователя в группу docker."
     return
   fi
 
-  # Шаг 6: Обновление групп для текущего сеанса
   newgrp docker
   if [ $? -ne 0 ]; then
     print_colored red "Ошибка обновления групп для текущего сеанса."
     return
   fi
 
-  # Шаг 7: Проверка установки Docker с помощью запуска тестового контейнера
   docker run hello-world
   if [ $? -ne 0 ]; then
     print_colored red "Ошибка запуска тестового контейнера. Проверьте установку Docker вручную."
     return
   fi
 
-  # Шаг 8: Включение сервисов Docker и containerd
   sudo systemctl enable docker.service
   sudo systemctl enable containerd.service
   if [ $? -ne 0 ]; then
@@ -407,18 +435,45 @@ function install_make {
   fi
 }
 
-function open_gitlab {
-  xdg-open "https://gitlab.efko.ru"
-}
+function update_script {
+  INSTALL_DIR="$HOME/qq"
+  REPO_URL="https://raw.githubusercontent.com/ArturUshakov/qq/master"
 
-function prune_builder {
-  docker builder prune -f
+  mkdir -p "$INSTALL_DIR"
+
+  print_colored blue "Загрузка необходимых файлов из GitHub..."
+
+  files=("qq.sh" "qq_completions.sh" "CHANGELOG.md" "commands.sh")
+
+  for file in "${files[@]}"; do
+    curl -s "$REPO_URL/$file" -o "$INSTALL_DIR/$file"
+    if [ $? -eq 0 ]; then
+      print_colored green "$file загружен успешно."
+      chmod +rx "$INSTALL_DIR/$file"
+    else
+      print_colored red "Ошибка загрузки $file."
+    fi
+  done
+
+  print_colored green "Обновление завершено."
+
+  print_colored blue "Последние обновления:\n"
+  get_latest_tag_info
 }
 
 function re_install {
   curl -s https://raw.githubusercontent.com/ArturUshakov/qq/master/install.sh | bash
 }
 
+function prune_builder {
+  docker builder prune -f
+}
+
+function open_gitlab {
+  xdg-open "https://gitlab.efko.ru"
+}
+
+# Главная функция
 function main {
   local COMMAND=""
   local ARG="$1"

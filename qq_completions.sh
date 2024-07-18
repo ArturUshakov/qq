@@ -4,54 +4,26 @@ source $HOME/qq/commands.sh
 
 function get_commands {
   local commands=""
-  for cmd in "${!COMMANDS_HELP[@]}"; do
-    IFS=',' read -r -a array <<<"$cmd"
-    for element in "${array[@]}"; do
-      commands="${commands} ${element}"
-    done
-  done
-  for cmd in "${!COMMANDS_LIST[@]}"; do
-    IFS=',' read -r -a array <<<"$cmd"
-    for element in "${array[@]}"; do
-      commands="${commands} ${element}"
-    done
-  done
-  for cmd in "${!COMMANDS_MANAGE[@]}"; do
-    IFS=',' read -r -a array <<<"$cmd"
-    for element in "${array[@]}"; do
-      commands="${commands} ${element}"
-    done
-  done
-  for cmd in "${!COMMANDS_UPDATE[@]}"; do
-    IFS=',' read -r -a array <<<"$cmd"
-    for element in "${array[@]}"; do
-      commands="${commands} ${element}"
-    done
-  done
-  for cmd in "${!COMMANDS_MISC[@]}"; do
-    IFS=',' read -r -a array <<<"$cmd"
-    for element in "${array[@]}"; do
-      commands="${commands} ${element}"
-    done
-  done
-  for cmd in "${!COMMANDS_INSTALL[@]}"; do
-    IFS=',' read -r -a array <<<"$cmd"
-    for element in "${array[@]}"; do
-      commands="${commands} ${element}"
+  local command_arrays=(COMMANDS_HELP COMMANDS_LIST COMMANDS_MANAGE COMMANDS_UPDATE COMMANDS_MISC COMMANDS_INSTALL)
+
+  for command_array_name in "${command_arrays[@]}"; do
+    declare -n command_array="$command_array_name"
+    for cmd in "${!command_array[@]}"; do
+      IFS=',' read -r -a array <<<"$cmd"
+      for element in "${array[@]}"; do
+        commands="${commands} ${element}"
+      done
     done
   done
   printf "%s\n" "${commands}"
 }
 
 _open_folder_completions() {
-  local cur prev folders
+  local cur folders
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
-  prev="${COMP_WORDS[COMP_CWORD - 1]}"
-  if [[ ${prev} == "open-folder" || ${prev} == "-of" ]]; then
-    folders=$(find ~ -mindepth 1 -maxdepth 3 -type d -path "*/${cur}*" -exec basename {} \;)
-    COMPREPLY=($(compgen -W "${folders}" -- "${cur}"))
-  fi
+  folders=$(find ~ -mindepth 1 -maxdepth 3 -type d -path "*/${cur}*" -exec basename {} \;)
+  COMPREPLY=($(compgen -W "${folders}" -- "${cur}"))
 }
 
 _qq_completions() {
@@ -64,24 +36,14 @@ _qq_completions() {
   case "${prev}" in
     -ri)
       COMPREPLY=($(compgen -W "$(docker images --format '{{.Tag}}')" -- "${cur}"))
-      return 0
       ;;
-    -gph)
-      return 0
-      ;;
-    down | -d)
-      containers=$(docker ps --format '{{.Names}}')
-      COMPREPLY=($(compgen -W "${containers}" -- "${cur}"))
-      return 0
-      ;;
-    up)
+    down | -d | up)
       containers=$(docker ps -a --format '{{.Names}}')
+      [[ "${prev}" == "down" || "${prev}" == "-d" ]] && containers=$(docker ps --format '{{.Names}}')
       COMPREPLY=($(compgen -W "${containers}" -- "${cur}"))
-      return 0
       ;;
     open-folder | -of)
       _open_folder_completions
-      return 0
       ;;
     *)
       if [[ ${cur} == -* ]]; then
@@ -90,7 +52,6 @@ _qq_completions() {
         containers=$(docker ps --format '{{.Names}}')
         COMPREPLY=($(compgen -W "${commands} ${containers}" -- "${cur}"))
       fi
-      return 0
       ;;
   esac
 }
