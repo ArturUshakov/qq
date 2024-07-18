@@ -22,6 +22,24 @@ function get_commands {
       commands="${commands} ${element}"
     done
   done
+  for cmd in "${!COMMANDS_UPDATE[@]}"; do
+    IFS=',' read -r -a array <<<"$cmd"
+    for element in "${array[@]}"; do
+      commands="${commands} ${element}"
+    done
+  done
+  for cmd in "${!COMMANDS_MISC[@]}"; do
+    IFS=',' read -r -a array <<<"$cmd"
+    for element in "${array[@]}"; do
+      commands="${commands} ${element}"
+    done
+  done
+  for cmd in "${!COMMANDS_INSTALL[@]}"; do
+    IFS=',' read -r -a array <<<"$cmd"
+    for element in "${array[@]}"; do
+      commands="${commands} ${element}"
+    done
+  done
   printf "%s\n" "${commands}"
 }
 

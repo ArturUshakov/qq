@@ -4,22 +4,23 @@ source $HOME/qq/commands.sh
 
 #COMMANDS_HELP
 function print_help {
-  print_colored blue "\nСправка:"
-  for key in "${!COMMANDS_HELP[@]}"; do
-    IFS='|' read -r func desc <<<"${COMMANDS_HELP[$key]}"
-    printf "    $(print_colored green "%-30s") $(print_colored yellow "%s")\n" "$key" "$desc"
-  done
+  for group in $(compgen -A variable); do
+    if declare -p "$group" 2>/dev/null | grep -q 'declare -A'; then
+      declare -n cmd_group="$group"
+      case $group in
+        "COMMANDS_HELP") print_colored blue "\nСправка:" ;;
+        "COMMANDS_LIST") print_colored blue "\nСписки:" ;;
+        "COMMANDS_MANAGE") print_colored blue "\nУправление:" ;;
+        "COMMANDS_UPDATE") print_colored blue "\nОбновление и установка:" ;;
+        "COMMANDS_MISC") print_colored blue "\nФайловая система и GitLab:" ;;
+        "COMMANDS_INSTALL") print_colored blue "\nУстановка и удаление Docker и утилит:" ;;
+      esac
 
-  print_colored blue "\nСписки:"
-  for key in "${!COMMANDS_LIST[@]}"; do
-    IFS='|' read -r func desc <<<"${COMMANDS_LIST[$key]}"
-    printf "    $(print_colored green "%-30s") $(print_colored yellow "%s")\n" "$key" "$desc"
-  done
-
-  print_colored blue "\nУправление:"
-  for key in "${!COMMANDS_MANAGE[@]}"; do
-    IFS='|' read -r func desc <<<"${COMMANDS_MANAGE[$key]}"
-    printf "    $(print_colored green "%-30s") $(print_colored yellow "%s")\n" "$key" "$desc"
+      for key in "${!cmd_group[@]}"; do
+        IFS='|' read -r func desc <<<"${cmd_group[$key]}"
+        printf "    $(print_colored green "%-30s") $(print_colored yellow "%s")\n" "$key" "$desc"
+      done
+    fi
   done
 }
 
@@ -428,16 +429,16 @@ function main {
     return
   fi
 
-  for key in "${!COMMANDS_HELP[@]}"; do
-    [[ ",${key}," == *",$ARG,"* ]] && COMMAND="${COMMANDS_HELP[$key]}" && break
-  done
-
-  [[ -z "$COMMAND" ]] && for key in "${!COMMANDS_LIST[@]}"; do
-    [[ ",${key}," == *",$ARG,"* ]] && COMMAND="${COMMANDS_LIST[$key]}" && break
-  done
-
-  [[ -z "$COMMAND" ]] && for key in "${!COMMANDS_MANAGE[@]}"; do
-    [[ ",${key}," == *",$ARG,"* ]] && COMMAND="${COMMANDS_MANAGE[$key]}" && break
+  for group in $(compgen -A variable); do
+    if declare -p "$group" 2>/dev/null | grep -q 'declare -A'; then
+      declare -n cmd_group="$group"
+      for key in "${!cmd_group[@]}"; do
+        if [[ ",${key}," == *",$ARG,"* ]]; then
+          COMMAND="${cmd_group[$key]}"
+          break 2
+        fi
+      done
+    fi
   done
 
   if [[ -n "$COMMAND" ]]; then
