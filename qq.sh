@@ -288,6 +288,7 @@ function update_script {
   for file in "${files[@]}"; do
     mv "$TEMP_DIR/$file" "$INSTALL_DIR/$file"
     if [ $? -eq 0 ]; then
+      chmod +x "$INSTALL_DIR/$file"
       print_colored green "$file обновлен успешно."
     else
       print_colored red "Ошибка замены $file. Восстановление резервных копий."
