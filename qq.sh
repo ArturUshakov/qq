@@ -255,51 +255,26 @@ function stop_all_containers {
 }
 
 function update_script {
-  local REPO_URL="https://raw.githubusercontent.com/ArturUshakov/qq/master"
-  local INSTALL_DIR="$HOME/qq"
-  local BACKUP_DIR="$INSTALL_DIR/backup_$(date +%Y%m%d%H%M%S)"
-  local TEMP_DIR
-  TEMP_DIR=$(mktemp -d)
+  INSTALL_DIR="$HOME/qq"
+  REPO_URL="https://raw.githubusercontent.com/ArturUshakov/qq/master"
 
-  print_colored blue "Обновление скрипта qq..."
+  mkdir -p "$INSTALL_DIR"
 
-  local files=("qq.sh" "qq_completions.sh" "CHANGELOG.md" "commands.sh")
+  print_colored blue "Загрузка необходимых файлов из GitHub..."
 
-  # Создание резервной копии текущих файлов
-  mkdir -p "$BACKUP_DIR"
+  # Список файлов для загрузки
+  files=("qq.sh" "qq_completions.sh" "CHANGELOG.md" "commands.sh")
+
   for file in "${files[@]}"; do
-    if [ -f "$INSTALL_DIR/$file" ]; then
-      cp "$INSTALL_DIR/$file" "$BACKUP_DIR/"
-    fi
-  done
-
-  # Загрузка новых файлов во временный каталог
-  for file in "${files[@]}"; do
-    curl -s "$REPO_URL/$file" -o "$TEMP_DIR/$file"
-    if [ $? -ne 0 ]; then
-      print_colored red "Ошибка загрузки $file. Восстановление резервных копий."
-      cp "$BACKUP_DIR/*" "$INSTALL_DIR/"
-      rm -rf "$TEMP_DIR" "$BACKUP_DIR"
-      return
-    fi
-  done
-
-  # Замена текущих файлов новыми
-  for file in "${files[@]}"; do
-    mv "$TEMP_DIR/$file" "$INSTALL_DIR/$file"
+    curl -s "$REPO_URL/$file" -o "$INSTALL_DIR/$file"
     if [ $? -eq 0 ]; then
-      chmod +x "$INSTALL_DIR/$file"
-      print_colored green "$file обновлен успешно."
+      print_colored green "$file загружен успешно."
+      chmod +rx "$INSTALL_DIR/$file"
     else
-      print_colored red "Ошибка замены $file. Восстановление резервных копий."
-      cp "$BACKUP_DIR/*" "$INSTALL_DIR/"
-      rm -rf "$TEMP_DIR" "$BACKUP_DIR"
-      return
+      print_colored red "Ошибка загрузки $file."
     fi
   done
 
-  # Удаление временного каталога и резервной копии после успешного обновления
-  rm -rf "$TEMP_DIR" "$BACKUP_DIR"
   print_colored green "Обновление завершено."
 
   print_colored blue "Последние обновления:\n"

@@ -72,24 +72,16 @@ add_completion() {
 }
 
 # Основной процесс установки
-print_colored blue "Хотите установить автодополнения и alias для qq? (yes/y или нажмите Enter для продолжения, любой другой клавишей для отмены)"
-read -r response
-
-if [[ "$response" =~ ^(yes|y|Y|YES|Yes|)$ ]]; then
-  # Настройка alias и автодополнения
-  if [ -f "$HOME/.bash_aliases" ]; then
-    add_alias "$HOME/.bash_aliases"
-    add_completion "$HOME/.bash_aliases"
-  else
-    add_alias "$HOME/.bashrc"
-    add_completion "$HOME/.bashrc"
-  fi
-
-  # Перезагрузка настроек
-  source "$HOME/.bashrc"
-  [ -f "$HOME/.bash_aliases" ] && source "$HOME/.bash_aliases"
-
-  print_colored green "Установка завершена. Alias и автодополнения настроены."
+if [ -f "$HOME/.bash_aliases" ]; then
+  add_alias "$HOME/.bash_aliases"
+  add_completion "$HOME/.bash_aliases"
 else
-  print_colored red "Установка отменена."
+  add_alias "$HOME/.bashrc"
+  add_completion "$HOME/.bashrc"
 fi
+
+# Перезагрузка настроек
+source "$HOME/.bashrc"
+[ -f "$HOME/.bash_aliases" ] && source "$HOME/.bash_aliases"
+
+print_colored green "Установка завершена."
