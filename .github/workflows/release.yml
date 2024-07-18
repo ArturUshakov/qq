@@ -2,69 +2,50 @@ name: Create Release
 
 on:
   push:
-    branches: ["master"]
-  workflow_dispatch:
-  watch:
-    paths:
-      - CHANGELOG.md
-
-permissions:
-  contents: write
+    branches:
+      - master
+    tags:
+      - '*'
 
 jobs:
   create_release:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
+      - name: Get the latest tag
+        id: get_tag
+        run: echo ::set-output name=tag::$(git describe --tags --abbrev=0)
 
-      - name: Install GitHub CLI
+      - name: Check if tag already exists
+        id: check_tag
         run: |
-          npm install -g @githubnext/github-copilot-cli
-
-      - name: Extract version from CHANGELOG.md
-        id: extract_version
-        run: |
-          version=$(grep -oP '## \[\K[^\]]+' CHANGELOG.md | head -1)
-          echo "version=$version" >> $GITHUB_ENV
-          echo "Extracted version: $version"
-
-      - name: Check and stop if tag exists
-        id: check_and_stop
-        run: |
-          if git rev-parse "refs/tags/${{ env.version }}" >/dev/null 2>&1; then
-            echo "Tag already exists, skipping release creation."
+          git fetch --tags
+          if git rev-parse "$GITHUB_REF" >/dev/null 2>&1; then
+            echo "Tag $GITHUB_REF already exists. Exiting."
             exit 0
           fi
 
-      - name: Extract release notes from CHANGELOG.md
-        id: extract_notes
+      - name: Set up Git
         run: |
-          tag_line=$(grep -n "## \[${{ env.version }}\]" CHANGELOG.md | cut -d: -f1)
-          next_tag_line=$(grep -n -A 1 "## \[" CHANGELOG.md | grep -A 1 "^$tag_line:" | tail -n 1 | cut -d: -f1)
-          if [[ -z "$next_tag_line" || "$next_tag_line" -le "$tag_line" ]]; then
-            next_tag_line=$(wc -l < CHANGELOG.md)
-          fi
-          next_tag_line=$((next_tag_line-1))
-          release_notes=$(sed -n "${tag_line},${next_tag_line}p" CHANGELOG.md | sed '1d;$d')
-          echo "release_notes<<EOF" >> $GITHUB_ENV
-          echo "$release_notes" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-      - name: Debug release notes
+      - name: Create Release Notes
+        id: create_release_notes
         run: |
-          echo "Release notes: ${{ env.release_notes }}"
+          CHANGELOG=$(awk '/## \['"${{ steps.get_tag.outputs.tag }}"'\]/{flag=1;next}/## \[/{flag=0}flag' CHANGELOG.md)
+          echo "::set-output name=notes::$CHANGELOG"
 
       - name: Create GitHub Release
-        run: |
-          gh auth login --with-token <<< "${{ secrets.RELEASE_TOKEN }}"
-          gh release create "${{ env.version }}" \
-              --repo="$GITHUB_REPOSITORY" \
-              --title="Release ${{ env.version }}" \
-              --notes="${{ env.release_notes }}"
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_tag.outputs.tag }}
+          release_name: Release ${{ steps.get_tag.outputs.tag }}
+          body: ${{ steps.create_release_notes.outputs.notes }}
+          draft: false
+          prerelease: false
