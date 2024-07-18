@@ -2,8 +2,7 @@ name: Create Release
 
 on:
   push:
-    branches:
-      - master
+    branches: ["master"]
   workflow_dispatch:
   watch:
     paths:
@@ -18,13 +17,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      - name: Install GitHub CLI
+        run: sudo apt-get install -y gh
 
       - name: Extract version from CHANGELOG.md
         id: extract_version
         run: |
           version=$(grep -oP '## \[\K[^\]]+' CHANGELOG.md | head -1)
           echo "version=$version" >> $GITHUB_ENV
+          echo "Extracted version: $version"
 
       - name: Check if tag exists
         id: check_tag
@@ -45,7 +48,7 @@ jobs:
         id: extract_notes
         run: |
           tag_line=$(grep -n "## \[${{ env.version }}\]" CHANGELOG.md | cut -d: -f1)
-          next_tag_line=$(grep -n -A 1 "## \[" CHANGELOG.md | grep -A 1 "^${tag_line}:" | tail -n 1 | cut -d: -f1)
+          next_tag_line=$(grep -n -A 1 "## \[" CHANGELOG.md | grep -A 1 "^$tag_line:" | tail -n 1 | cut -d: -f1)
           if [ -z "$next_tag_line" ] || [ "$next_tag_line" -le "$tag_line" ]; then
             next_tag_line=$(wc -l < CHANGELOG.md)
           fi
@@ -54,15 +57,16 @@ jobs:
           echo "$release_notes" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Create GitHub Release
+      - name: Debug release notes
         if: env.tag_exists == 'false'
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        with:
-          tag_name: ${{ env.version }}
-          release_name: Release ${{ env.version }}
-          body: ${{ env.release_notes }}
-          draft: false
-          prerelease: false
+        run: |
+          echo "Release notes: ${{ env.release_notes }}"
+
+      - name: Create GitHub Release using gh CLI
+        if: env.tag_exists == 'false'
+        run: |
+          gh auth login --with-token <<< "${{ secrets.RELEASE_TOKEN }}"
+          gh release create "${{ env.version }}" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="Release ${{ env.version }}" \
+              --notes="${{ env.release_notes }}"
