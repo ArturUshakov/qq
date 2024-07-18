@@ -24,10 +24,9 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Setup GitHub CLI
-        uses: actions/gh-cli@v1
-        with:
-          version: latest
+      - name: Install GitHub CLI
+        run: |
+          npm install -g @githubnext/github-copilot-cli
 
       - name: Extract version from CHANGELOG.md
         id: extract_version
@@ -52,7 +51,8 @@ jobs:
           if [[ -z "$next_tag_line" || "$next_tag_line" -le "$tag_line" ]]; then
             next_tag_line=$(wc -l < CHANGELOG.md)
           fi
-          release_notes=$(sed -n "${tag_line},${next_tag_line}p" CHANGELOG.md | sed '$d')
+          next_tag_line=$((next_tag_line-1))
+          release_notes=$(sed -n "${tag_line},${next_tag_line}p" CHANGELOG.md | sed '1d;$d')
           echo "release_notes<<EOF" >> $GITHUB_ENV
           echo "$release_notes" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
