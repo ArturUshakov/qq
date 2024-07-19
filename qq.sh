@@ -306,15 +306,18 @@ function open_folder_by_name {
 }
 
 function generate_password_hash {
-  local password="$1"
-  if [[ -z "$password" ]]; then
-    print_colored red "Пожалуйста, укажите пароль для генерации хеша"
+  if [ -z "$1" ]; then
+    echo "Пожалуйста, укажите пароль для генерации хеша."
     return
   fi
 
+  local password
   local hash
-  hash=$(htpasswd -bnBC 10 "" "$password" | tr -d ':\n')
-  printf "Сгенерированный хеш: %s\n" "$hash"
+
+  password="$1"
+  hash=$(php -r "echo password_hash('$password', PASSWORD_DEFAULT);")
+
+  echo "Сгенерированный хеш: $hash"
 }
 
 # Команды установки и удаления
