@@ -306,18 +306,27 @@ function open_folder_by_name {
 }
 
 function generate_password_hash {
-  if [ -z "$1" ]; then
-    echo "Пожалуйста, укажите пароль для генерации хеша."
+  local password="$1"
+  if [[ -z "$password" ]]; then
+    print_colored red "Пожалуйста, укажите пароль для генерации хеша"
     return
   fi
 
-  local password
-  local hash
-
-  password="$1"
-  hash=$(php -r "echo password_hash('$password', PASSWORD_DEFAULT);")
-
-  echo "Сгенерированный хеш: $hash"
+  if command -v htpasswd >/dev/null 2>&1; then
+    local hash
+    hash=$(htpasswd -bnBC 10 "" "$password" | tr -d ':\n')
+    printf "Сгенерированный хеш: %s\n" "$hash"
+  elif command -v php >/dev/null 2>&1; then
+    local hash
+    hash=$(php -r "echo password_hash('$password', PASSWORD_DEFAULT);")
+    printf "Сгенерированный хеш: %s\n" "$hash"
+  elif command -v openssl >/dev/null 2>&1; then
+    local hash
+    hash=$(openssl passwd -6 "$password")
+    printf "Сгенерированный хеш: %s\n" "$hash"
+  else
+    print_colored red "Команды htpasswd, PHP и OpenSSL не найдены. Установите одну из них для генерации хеша."
+  fi
 }
 
 # Команды установки и удаления
@@ -387,6 +396,31 @@ function install_docker {
   print_colored yellow "Если вы запускали команды Docker CLI с помощью sudo до добавления пользователя в группу docker, выполните следующие команды для решения проблемы с правами доступа:"
   echo "sudo chown "$USER":"$USER" /home/"$USER"/.docker -R"
   echo "sudo chmod g+rwx "$HOME/.docker" -R"
+}
+
+function stop_filtered_containers {
+    if [ -z "$1" ]; then
+        echo "Пожалуйста, укажите фильтр для остановки контейнеров."
+        return
+    fi
+
+    local filter="$1"
+    local container_ids=($(docker ps --filter "name=$filter" -q))
+
+    if [ ${#container_ids[@]} -eq 0 ]; then
+        echo "Контейнеры, соответствующие фильтру '$filter', не найдены."
+        return
+    fi
+
+    print_colored blue "Остановка контейнеров, соответствующих фильтру '$filter':"
+    print_colored blue "-----------------------------------------------------------"
+
+    for container_id in "${container_ids[@]}"; do
+        local container_name=$(docker ps --filter "id=$container_id" --format "{{.Names}}")
+        docker stop "$container_id" > /dev/null
+        printf "%s\n%s\n%s\n" "$(print_colored green "ID: $container_id")" "$(print_colored yellow "Имя: $container_name")" "$(print_colored red "Остановлен")"
+        print_colored blue "-----------------------------------------------------------"
+    done
 }
 
 function delete_docker {
