@@ -38,6 +38,7 @@ init_commands() {
   declare -gA COMMANDS_MISC=(
     ["-of,open-folder"]="open_folder_by_name|Открывает указаную папку"
     ["-gl,gitlab"]="open_gitlab|Открывает страницу gitlab.efko.ru"
+    ["-gi,git-ignore-file-mode"]="git_ignore_file_mode|Выключает отслеживание изменения прав гитом"
   )
 
   # Команды для установки и удаления Docker и утилит

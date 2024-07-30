@@ -510,6 +510,10 @@ function open_gitlab {
   xdg-open "https://gitlab.efko.ru"
 }
 
+function git_ignore_file_mode {
+    git config core.fileMode false
+}
+
 # Главная функция
 function main {
   local COMMAND=""
