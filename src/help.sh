@@ -4,24 +4,24 @@ function print_help {
     declare -p "$group" 2>/dev/null | grep -q 'declare -A' || continue
     declare -n cmd_group="$group"
     case $group in
-      "COMMANDS_HELP") print_colored blue "\nСправка:" ;;
-      "COMMANDS_LIST") print_colored blue "\nСписки:" ;;
-      "COMMANDS_MANAGE") print_colored blue "\nУправление:" ;;
-      "COMMANDS_UPDATE") print_colored blue "\nОбновление и установка:" ;;
-      "COMMANDS_MISC") print_colored blue "\nФайловая система и GitLab:" ;;
-      "COMMANDS_INSTALL") print_colored blue "\nУстановка и удаление Docker и утилит:" ;;
+      "COMMANDS_HELP") print_colored bright_blue "\n==================== Справка ====================" ;;
+      "COMMANDS_LIST") print_colored bright_blue "\n==================== Списки =====================" ;;
+      "COMMANDS_MANAGE") print_colored bright_blue "\n================== Управление ===================" ;;
+      "COMMANDS_UPDATE") print_colored bright_blue "\n========== Обновление и установка ==============" ;;
+      "COMMANDS_MISC") print_colored bright_blue "\n========= Файловая система и GitLab ============" ;;
+      "COMMANDS_INSTALL") print_colored bright_blue "\n==== Установка и удаление Docker и утилит ======" ;;
     esac
 
     for key in "${!cmd_group[@]}"; do
       IFS='|' read -r func desc <<<"${cmd_group[$key]}"
-      printf "    $(print_colored green "%-30s") $(print_colored yellow "%s")\n" "$key" "$desc"
+      printf "    $(print_colored bright_green "%-30s") $(print_colored bright_yellow "%s")\n" "$key" "$desc"
     done
   done
 }
 
 function stop_filtered_containers {
     if [ -z "$1" ]; then
-        echo "Пожалуйста, укажите фильтр для остановки контейнеров."
+        print_colored bright_red "Пожалуйста, укажите фильтр для остановки контейнеров."
         return
     fi
 
@@ -29,19 +29,19 @@ function stop_filtered_containers {
     local container_ids=($(docker ps --filter "name=$filter" -q))
 
     if [ ${#container_ids[@]} -eq 0 ]; then
-        echo "Контейнеры, соответствующие фильтру '$filter', не найдены."
+        print_colored bright_red "Контейнеры, соответствующие фильтру '$filter', не найдены."
         return
     fi
 
-    print_colored blue "Остановка контейнеров, соответствующих фильтру '$filter':"
-    print_colored blue "-----------------------------------------------------------"
+    print_colored bright_blue "Остановка контейнеров, соответствующих фильтру $(print_colored bright_yellow "$filter"):"
+    print_colored bright_blue "-----------------------------------------------------------"
 
     for container_id in "${container_ids[@]}"; do
         local container_name=$(docker ps --filter "id=$container_id" --format "{{.Names}}")
         docker stop "$container_id" > /dev/null
-        printf "%s\n%s\n%s\n" "$(print_colored green "ID: $container_id")" "$(print_colored yellow "Имя: $container_name")" "$(print_colored red "Остановлен")"
-        print_colored blue "-----------------------------------------------------------"
+        printf "%s %s\n" "$(print_colored bright_green "$container_name")" "$(print_colored bright_red "остановлен")"
     done
+    print_colored bright_blue "-----------------------------------------------------------"
 }
 
 function open_gitlab {
