@@ -164,7 +164,6 @@ function update_script {
 
   print_colored green "Обновление завершено."
 
-  print_colored blue "Последние обновления:\n"
   get_latest_tag_info
 
   rm -rf "$TEMP_DIR"
