@@ -30,7 +30,7 @@ mkdir -p "$INSTALL_DIR"
 mkdir -p "$TEMP_DIR"
 
 print_colored blue "Загрузка архива из GitHub..."
-curl -L -o "$TEMP_DIR/master.zip" "$REPO_URL"
+curl -L -o "$TEMP_DIR/feature.zip" "$REPO_URL"
 if [ $? -eq 0 ]; then
   print_colored green "Архив загружен успешно."
 else
@@ -39,7 +39,7 @@ else
 fi
 
 print_colored blue "Распаковка архива..."
-unzip -q "$TEMP_DIR/master.zip" -d "$TEMP_DIR"
+unzip -q "$TEMP_DIR/feature.zip" -d "$TEMP_DIR"
 if [ $? -eq 0 ]; then
   print_colored green "Архив распакован успешно."
 else
@@ -48,7 +48,7 @@ else
 fi
 
 print_colored blue "Копирование файлов..."
-cp -r "$TEMP_DIR/qq-master/." "$INSTALL_DIR"
+cp -r "$TEMP_DIR/qq-feature-QQ-20240801/." "$INSTALL_DIR"
 if [ $? -eq 0 ]; then
   print_colored green "Файлы скопированы успешно."
   chmod +rx "$INSTALL_DIR"/*
@@ -58,7 +58,7 @@ else
 fi
 
 print_colored blue "Удаление ненужных файлов..."
-find "$INSTALL_DIR" -mindepth 1 -maxdepth 1 ! -name 'src' ! -name 'CHANGELOG.md' ! -name 'commands.sh' ! -name 'qq.config' ! -name 'qq.sh' ! -name 'qq_completions.sh' -exec rm -rf {} +
+find "$INSTALL_DIR" -mindepth 1 -maxdepth 1 ! -name 'src' ! -name 'CHANGELOG.md' ! -name 'commands.sh' ! -name 'instal.sq' ! -name 'qq.config' ! -name 'qq.sh' ! -name 'qq_completions.sh' -exec rm -rf {} +
 if [ $? -eq 0 ]; then
   print_colored green "Ненужные файлы удалены успешно."
 else
