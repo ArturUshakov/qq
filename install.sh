@@ -3,6 +3,7 @@
 INSTALL_DIR="$HOME/qq"
 TEMP_DIR="$HOME/qq_temp"
 REPO_URL="https://github.com/ArturUshakov/qq/archive/refs/heads/feature/QQ-20240801.zip"
+FILES=("CHANGELOG.md" "commands.sh" "instal.sq" "qq.config" "qq.sh" "qq_completions.sh")
 QQ_SCRIPT="$INSTALL_DIR/qq.sh"
 COMPLETION_SCRIPT="$INSTALL_DIR/qq_completions.sh"
 ALIAS_CMD="alias qq='$QQ_SCRIPT'"
