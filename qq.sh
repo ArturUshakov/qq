@@ -1,7 +1,11 @@
 #!/bin/bash
 
 . $HOME/qq/commands.sh
-. $HOME/qq/src/*
+for file in "$HOME/qq/src/"*.sh; do
+  if [ -f "$file" ]; then
+    . "$file"
+  fi
+done
 
 # Главная функция
 function main {
