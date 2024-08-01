@@ -58,7 +58,7 @@ else
 fi
 
 print_colored blue "Удаление ненужных файлов..."
-find "$INSTALL_DIR" -mindepth 1 -maxdepth 1 ! -name 'src' ! -name 'CHANGELOG.md' ! -name 'commands.sh' ! -name 'qq.config' ! -name 'qq.sh' ! -name 'qq_completions.sh' -exec rm -rf {} +
+find "$INSTALL_DIR" -mindepth 1 -maxdepth 1 ! -name 'src' ! -name 'CHANGELOG.md' ! -name 'commands.sh' ! -name 'qq.sh' ! -name 'qq_completions.sh' -exec rm -rf {} +
 if [ $? -eq 0 ]; then
   print_colored green "Ненужные файлы удалены успешно."
 else
