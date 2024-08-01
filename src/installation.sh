@@ -167,7 +167,6 @@ function update_script {
   print_colored blue "Последние обновления:\n"
   get_latest_tag_info
 
-  # Очистка временной директории
   rm -rf "$TEMP_DIR"
 }
 

@@ -3,7 +3,6 @@
 INSTALL_DIR="$HOME/qq"
 TEMP_DIR="$HOME/qq_temp"
 REPO_URL="https://github.com/ArturUshakov/qq/archive/refs/heads/master.zip"
-FILES=("CHANGELOG.md" "commands.sh" "instal.sq" "qq.config" "qq.sh" "qq_completions.sh")
 QQ_SCRIPT="$INSTALL_DIR/qq.sh"
 COMPLETION_SCRIPT="$INSTALL_DIR/qq_completions.sh"
 ALIAS_CMD="alias qq='$QQ_SCRIPT'"
@@ -59,7 +58,7 @@ else
 fi
 
 print_colored blue "Удаление ненужных файлов..."
-find "$INSTALL_DIR" -mindepth 1 -maxdepth 1 ! -name 'src' ! -name 'CHANGELOG.md' ! -name 'commands.sh' ! -name 'instal.sq' ! -name 'qq.config' ! -name 'qq.sh' ! -name 'qq_completions.sh' -exec rm -rf {} +
+find "$INSTALL_DIR" -mindepth 1 -maxdepth 1 ! -name 'src' ! -name 'CHANGELOG.md' ! -name 'commands.sh' ! -name 'qq.config' ! -name 'qq.sh' ! -name 'qq_completions.sh' -exec rm -rf {} +
 if [ $? -eq 0 ]; then
   print_colored green "Ненужные файлы удалены успешно."
 else
