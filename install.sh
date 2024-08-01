@@ -2,7 +2,7 @@
 
 INSTALL_DIR="$HOME/qq"
 TEMP_DIR="$HOME/qq_temp"
-REPO_URL="https://github.com/ArturUshakov/qq/archive/refs/heads/feature/QQ-20240801.zip"
+REPO_URL="https://github.com/ArturUshakov/qq/archive/refs/heads/master.zip"
 FILES=("CHANGELOG.md" "commands.sh" "instal.sq" "qq.config" "qq.sh" "qq_completions.sh")
 QQ_SCRIPT="$INSTALL_DIR/qq.sh"
 COMPLETION_SCRIPT="$INSTALL_DIR/qq_completions.sh"
@@ -31,7 +31,7 @@ mkdir -p "$INSTALL_DIR"
 mkdir -p "$TEMP_DIR"
 
 print_colored blue "Загрузка архива из GitHub..."
-curl -L -o "$TEMP_DIR/feature.zip" "$REPO_URL"
+curl -L -o "$TEMP_DIR/master.zip" "$REPO_URL"
 if [ $? -eq 0 ]; then
   print_colored green "Архив загружен успешно."
 else
@@ -40,7 +40,7 @@ else
 fi
 
 print_colored blue "Распаковка архива..."
-unzip -q "$TEMP_DIR/feature.zip" -d "$TEMP_DIR"
+unzip -q "$TEMP_DIR/master.zip" -d "$TEMP_DIR"
 if [ $? -eq 0 ]; then
   print_colored green "Архив распакован успешно."
 else
@@ -49,7 +49,7 @@ else
 fi
 
 print_colored blue "Копирование файлов..."
-cp -r "$TEMP_DIR/qq-feature-QQ-20240801/." "$INSTALL_DIR"
+cp -r "$TEMP_DIR/qq-master/." "$INSTALL_DIR"
 if [ $? -eq 0 ]; then
   print_colored green "Файлы скопированы успешно."
   chmod +rx "$INSTALL_DIR"/*
