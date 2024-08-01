@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source $HOME/qq/commands.sh
+. $HOME/qq/commands.sh
 
 function get_commands {
   local commands=""
