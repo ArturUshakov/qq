@@ -38,7 +38,7 @@ if [ -d "$INSTALL_DIR" ]; then
     git reset --hard origin/master
 else
     echo "Клонирование репозитория..."
-     git clone --branch feature/QQ-2024 "$REPO_URL" "$INSTALL_DIR"
+     git clone --branch master "$REPO_URL" "$INSTALL_DIR"
 fi
 
 cd "$INSTALL_DIR"
