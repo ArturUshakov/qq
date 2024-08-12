@@ -1,11 +1,12 @@
 #!/bin/bash
 
+USER_HOME=$(eval echo ~${SUDO_USER:-$USER})
 REPO_URL="https://github.com/ArturUshakov/qq.git"
-INSTALL_DIR="$HOME/qq"
+INSTALL_DIR="$USER_HOME/qq"
 EXECUTABLE="$INSTALL_DIR/qq"
 COMPLETIONS_SCRIPT="$INSTALL_DIR/qq_completions.sh"
-BASHRC="$HOME/.bashrc"
-BASH_ALIASES="$HOME/.bash_aliases"
+BASHRC="$USER_HOME/.bashrc"
+BASH_ALIASES="$USER_HOME/.bash_aliases"
 
 add_or_update_alias() {
     local alias_file="$1"
@@ -30,16 +31,25 @@ add_completion() {
     fi
 }
 
-if [ -d "$INSTALL_DIR" ]; then
-    echo "Папка $INSTALL_DIR уже существует. Обновляем существующую версию..."
-    cd "$INSTALL_DIR"
-    git fetch origin
-    git checkout master
-    git reset --hard origin/master
-else
-    echo "Клонирование репозитория..."
-     git clone --branch master "$REPO_URL" "$INSTALL_DIR"
-fi
+{
+    if [ ! -d "$INSTALL_DIR" ]; then
+        mkdir -p "$INSTALL_DIR"
+        echo "Папка $INSTALL_DIR создана."
+        echo "Клонирование репозитория..."
+        git clone --branch master "$REPO_URL" "$INSTALL_DIR"
+        chown -R "$SUDO_USER":"$SUDO_USER" "$INSTALL_DIR"
+    else
+        echo "Папка $INSTALL_DIR уже существует. Обновляем существующую версию..."
+        cd "$INSTALL_DIR"
+        git fetch origin
+        git pull origin master
+        git reset --hard origin/master
+        chown -R "$SUDO_USER":"$SUDO_USER" "$INSTALL_DIR"
+    fi
+} || {
+    echo "Ошибка при клонировании репозитория или обновлении версии."
+    exit 1
+}
 
 cd "$INSTALL_DIR"
 
