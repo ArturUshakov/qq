@@ -3,7 +3,7 @@
 USER_HOME=$(eval echo ~${SUDO_USER:-$USER})
 REPO_URL="https://github.com/ArturUshakov/qq.git"
 INSTALL_DIR="$USER_HOME/qq"
-EXECUTABLE="$INSTALL_DIR/qq.bin"
+EXECUTABLE="$INSTALL_DIR/qq"
 COMPLETIONS_SCRIPT="$INSTALL_DIR/qq_completions.sh"
 BASHRC="$USER_HOME/.bashrc"
 BASH_ALIASES="$USER_HOME/.bash_aliases"
