@@ -5,6 +5,13 @@
 Формат основан на [стандарте формата CHANGELOG](https://keepachangelog.com/en/1.0.0/),
 и придерживается [правил версионирования](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2024-10-05
+
+- Реализовано:
+  - -сlс, clear-last-commit Отменяет последний коммит, но оставляет изменения
+  - -pmb, git-prune-merged Удаляет локальные ветки, которые уже слиты с master
+  - -c, clear Выполняет очистку Docker: images <none>, builder cache, volumes, networks
+
 ## [1.1.1] - 2024-08-12
 
 - Исправлено
