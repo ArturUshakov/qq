@@ -35,7 +35,7 @@ jobs:
           echo "version=$version" >> $GITHUB_ENV
           echo "Extracted version: $version"
 
-      - name: Check and stop if tag exists
+      - name: Check if tag exists
         id: check_and_stop
         run: |
           if git rev-parse "refs/tags/${{ env.version }}" >/dev/null 2>&1; then
@@ -68,6 +68,7 @@ jobs:
               --repo="$GITHUB_REPOSITORY" \
               --title="Release ${{ env.version }}" \
               --notes="${{ env.release_notes }}"
+        continue-on-error: true
 
       - name: Delete merged branches
         run: |
@@ -75,7 +76,6 @@ jobs:
           merged_branches=$(gh pr list --state closed --base master --json headRefName --jq '.[].headRefName')
           for branch in $merged_branches; do
             if [ "$branch" != "master" ]; then
-              git push origin --delete "$branch"
+              git push origin --delete "$branch" || true
             fi
           done
-

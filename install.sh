@@ -51,6 +51,13 @@ add_completion() {
     unzip "$INSTALL_DIR/release.zip" -d "$INSTALL_DIR"
     rm "$INSTALL_DIR/release.zip"
 
+    temp_dir=$(find "$INSTALL_DIR" -mindepth 1 -maxdepth 1 -type d)
+    mv "$temp_dir"/* "$INSTALL_DIR/"
+    rm -rf "$temp_dir"
+
+    echo "Выставление прав на папку $INSTALL_DIR..."
+    chown -R "$SUDO_USER":"$SUDO_USER" "$INSTALL_DIR"
+
     echo "Удаление ненужных файлов..."
     rm -rf "$INSTALL_DIR/.github" "$INSTALL_DIR/README.md" "$INSTALL_DIR/.gitignore"
 
