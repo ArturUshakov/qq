@@ -71,7 +71,7 @@ jobs:
 
       - name: Delete merged branches
         run: |
-          gh auth login --with-token "${{ secrets.RELEASE_TOKEN }}"
+          gh auth login --with-token <<< "${{ secrets.RELEASE_TOKEN }}"
           merged_branches=$(gh pr list --state closed --base master --json headRefName --jq '.[].headRefName')
           for branch in $merged_branches; do
             if [ "$branch" != "master" ]; then
