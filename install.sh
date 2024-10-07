@@ -69,7 +69,7 @@ add_completion() {
     sudo chmod 777 -R "$INSTALL_DIR"
 
     echo "Удаление ненужных файлов..."
-    rm -rf "$INSTALL_DIR/.github" "$INSTALL_DIR/README.md" "$INSTALL_DIR/.gitignore"
+    rm -rf "$INSTALL_DIR/.github" "$INSTALL_DIR/README.md" "$INSTALL_DIR/.gitignore" "$INSTALL_DIR/install.sh"
 
 } || {
     echo "Ошибка при установке."
@@ -89,3 +89,4 @@ fi
 source "$BASHRC"
 
 echo "Установка завершена! Вы можете использовать команду 'qq' для запуска приложения."
+rm -rf "$INSTALL_DIR/install.sh"
