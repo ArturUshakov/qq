@@ -68,3 +68,13 @@ jobs:
               --repo="$GITHUB_REPOSITORY" \
               --title="Release ${{ env.version }}" \
               --notes="${{ env.release_notes }}"
+
+      - name: Delete merged branches
+        run: |
+          gh auth login --with-token "${{ secrets.RELEASE_TOKEN }}"
+          merged_branches=$(gh pr list --state closed --base master --json headRefName --jq '.[].headRefName')
+          for branch in $merged_branches; do
+            if [ "$branch" != "master" ]; then
+              git push origin --delete "$branch"
+            fi
+          done
