@@ -36,4 +36,3 @@ source ~/.bashrc
 ```
 
 Now, `qq` will no longer be available as a command.
-```
