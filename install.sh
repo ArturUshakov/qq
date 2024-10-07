@@ -43,20 +43,30 @@ add_completion() {
 
     echo "Получение информации о последнем релизе..."
     latest_release=$(curl -s $RELEASE_URL | grep zipball_url | cut -d '"' -f 4)
+    archive_name=$(basename "$latest_release")
 
     echo "Скачивание последнего релиза..."
-    curl -L "$latest_release" -o "$INSTALL_DIR/release.zip"
+    curl -L "$latest_release" -o "$INSTALL_DIR/$archive_name"
 
     echo "Распаковка релиза..."
-    unzip "$INSTALL_DIR/release.zip" -d "$INSTALL_DIR"
-    rm "$INSTALL_DIR/release.zip"
+    if unzip "$INSTALL_DIR/$archive_name" -d "$INSTALL_DIR"; then
+        rm "$INSTALL_DIR/$archive_name"
 
-    temp_dir=$(find "$INSTALL_DIR" -mindepth 1 -maxdepth 1 -type d)
-    mv "$temp_dir"/* "$INSTALL_DIR/"
-    rm -rf "$temp_dir"
+        temp_dir=$(find "$INSTALL_DIR" -mindepth 1 -maxdepth 1 -type d -name "ArturUshakov-qq-*")
+        if [ -d "$temp_dir" ]; then
+            mv "$temp_dir"/* "$INSTALL_DIR/"
+            rm -rf "$temp_dir"
+        else
+            echo "Ошибка: временная папка не найдена."
+            exit 1
+        fi
+    else
+        echo "Ошибка при распаковке архива."
+        exit 1
+    fi
 
     echo "Выставление прав на папку $INSTALL_DIR..."
-    chown -R "$SUDO_USER":"$SUDO_USER" "$INSTALL_DIR"
+    sudo chmod 777 -R "$INSTALL_DIR"
 
     echo "Удаление ненужных файлов..."
     rm -rf "$INSTALL_DIR/.github" "$INSTALL_DIR/README.md" "$INSTALL_DIR/.gitignore"
