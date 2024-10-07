@@ -1,12 +1,12 @@
 #!/bin/bash
 
 USER_HOME=$(eval echo ~${SUDO_USER:-$USER})
-REPO_URL="https://github.com/ArturUshakov/qq.git"
 INSTALL_DIR="$USER_HOME/qq"
 EXECUTABLE="$INSTALL_DIR/qq"
 COMPLETIONS_SCRIPT="$INSTALL_DIR/qq_completions.sh"
 BASHRC="$USER_HOME/.bashrc"
 BASH_ALIASES="$USER_HOME/.bash_aliases"
+RELEASE_URL="https://api.github.com/repos/ArturUshakov/qq/releases/latest"
 
 add_or_update_alias() {
     local alias_file="$1"
@@ -35,19 +35,27 @@ add_completion() {
     if [ ! -d "$INSTALL_DIR" ]; then
         mkdir -p "$INSTALL_DIR"
         echo "Папка $INSTALL_DIR создана."
-        echo "Клонирование репозитория..."
-        git clone --branch master "$REPO_URL" "$INSTALL_DIR"
-        chown -R "$SUDO_USER":"$SUDO_USER" "$INSTALL_DIR"
     else
-        echo "Папка $INSTALL_DIR уже существует. Обновляем существующую версию..."
-        cd "$INSTALL_DIR"
-        git fetch origin
-        git pull origin master
-        git reset --hard origin/master
-        chown -R "$SUDO_USER":"$SUDO_USER" "$INSTALL_DIR"
+        echo "Папка $INSTALL_DIR уже существует. Удаляем старую версию..."
+        rm -rf "$INSTALL_DIR"
+        mkdir -p "$INSTALL_DIR"
     fi
+
+    echo "Получение информации о последнем релизе..."
+    latest_release=$(curl -s $RELEASE_URL | grep zipball_url | cut -d '"' -f 4)
+
+    echo "Скачивание последнего релиза..."
+    curl -L "$latest_release" -o "$INSTALL_DIR/release.zip"
+
+    echo "Распаковка релиза..."
+    unzip "$INSTALL_DIR/release.zip" -d "$INSTALL_DIR"
+    rm "$INSTALL_DIR/release.zip"
+
+    echo "Удаление ненужных файлов..."
+    rm -rf "$INSTALL_DIR/.github" "$INSTALL_DIR/README.md" "$INSTALL_DIR/.gitignore"
+
 } || {
-    echo "Ошибка при клонировании репозитория или обновлении версии."
+    echo "Ошибка при установке."
     exit 1
 }
 
